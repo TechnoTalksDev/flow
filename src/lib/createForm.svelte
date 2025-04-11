@@ -40,7 +40,7 @@
 </script>
 
 <form method="POST" action="/portal?/create" use:enhance>
-	<Card.Root class="w-[350px]">
+	<Card.Root class="w-full">
 		<Card.Header>
 			<Card.Title>Create a task</Card.Title>
 			<Card.Description

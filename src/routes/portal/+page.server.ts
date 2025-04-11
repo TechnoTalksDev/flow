@@ -35,7 +35,7 @@ export const actions: Actions = {
     let dueDate = new Date(formData.get('dueDate') as string).toISOString()
     let time = formData.get('time')
     let tags = JSON.parse(formData.get('tags') as string)
-    console.log(time)
+    //console.log(time)
     //console.log(name, description, dueDate, time, tags)
 
     const {
@@ -63,7 +63,7 @@ export const actions: Actions = {
     .select()
     .order('completed', {ascending: true});
 
-    console.log(insertData)
+    //console.log(insertData)
 
     if (insertError) {
       console.error('Error inserting new record:', insertError);
