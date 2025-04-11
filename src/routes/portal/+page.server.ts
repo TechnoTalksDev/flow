@@ -1,12 +1,21 @@
 import { taskSchema } from "$lib/schemas.js";
-import { fail } from "@sveltejs/kit";
+import { error, fail } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types.js";
 import { superValidate } from "sveltekit-superforms";
 import { zod } from "sveltekit-superforms/adapters";
  
-export const load: PageServerLoad = async () => {
+export const load: PageServerLoad = async ({ params, locals: { supabase } }) => {
+
+	const { data, error: fetchError } = await supabase.from('tasks').select('*').limit(50);
+
+	if (fetchError) {
+		// Handle the error appropriately
+		throw error(500, 'Error fetching essay data');
+	}
+
  return {
   form: await superValidate(zod(taskSchema)),
+  tasks: data
  };
 };
 
@@ -51,7 +60,8 @@ export const actions: Actions = {
         user_id: user.id
       }
     ])
-    .select();
+    .select()
+    .order('completed', {ascending: true});
 
     console.log(insertData)
 

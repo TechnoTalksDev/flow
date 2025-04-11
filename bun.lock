@@ -4,7 +4,7 @@
     "": {
       "name": "flow",
       "dependencies": {
-        "@lucide/svelte": "^0.486.0",
+        "@lucide/svelte": "^0.487.0",
         "@supabase/ssr": "^0.6.1",
         "@supabase/supabase-js": "^2.49.4",
         "jsrepo": "^1.47.0",
@@ -185,7 +185,7 @@
 
     "@jridgewell/trace-mapping": ["@jridgewell/trace-mapping@0.3.25", "", { "dependencies": { "@jridgewell/resolve-uri": "^3.1.0", "@jridgewell/sourcemap-codec": "^1.4.14" } }, "sha512-vNk6aEwybGtawWmy/PzwnGDOjCkLWSD2wqvjGGAgOAwCGWySYXfYoxt00IJkTF+8Lb57DwOb3Aa0o9CApepiYQ=="],
 
-    "@lucide/svelte": ["@lucide/svelte@0.486.0", "", { "peerDependencies": { "svelte": "^5" } }, "sha512-Q8dav9ruYhdLepb2NNngYeGaMHxFv4Qd1FPc7YYkqouHfjTOJ3fLeyKmbANioRRmtMrLBNfOez9v5EIca+VCFg=="],
+    "@lucide/svelte": ["@lucide/svelte@0.487.0", "", { "peerDependencies": { "svelte": "^5" } }, "sha512-27b/wUzWrqDJu97+1iSV2X8L2JGRWH/mAWAjHgazWxhGxVu/kS0p3SbNu6w3skNmQNEku33EKU1v44IVwULzbw=="],
 
     "@napi-rs/wasm-runtime": ["@napi-rs/wasm-runtime@0.2.8", "", { "dependencies": { "@emnapi/core": "^1.4.0", "@emnapi/runtime": "^1.4.0", "@tybys/wasm-util": "^0.9.0" } }, "sha512-OBlgKdX7gin7OIq4fadsjpg+cp2ZphvAIKucHsNfTdJiqdOmOEwQd/bHi0VwNrcw5xpBJyUw6cK/QilCqy1BSg=="],
 

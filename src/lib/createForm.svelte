@@ -36,7 +36,7 @@
   let minutes = $state(0);
 
   let seconds = $derived(((hours * 60) + minutes) * 60)
-  $inspect(seconds)
+  //$inspect(seconds)
 </script>
 
 <form method="POST" action="/portal?/create" use:enhance>
@@ -113,9 +113,9 @@
 					{#snippet children({ props })}
 						<Form.Label>Flow</Form.Label>
 						<div class="flex flex-row items-center gap-2">
-              <Input {...props} type="number" class="w-[60px] p-1" placeholder="0" bind:value = {hours}/>
+              <Input {...props} name="" type="number" class="w-[60px] p-1" placeholder="0" bind:value = {hours}/>
               <Form.Label class="mr-4">H</Form.Label>
-              <Input {...props} type="number" class="w-[60px] p-1" max={59} min={0} placeholder="0" bind:value = {minutes}/>
+              <Input {...props} name="" type="number" class="w-[60px] p-1" max={59} min={0} placeholder="0" bind:value = {minutes}/>
               <Form.Label>M</Form.Label>
             </div>
             <input type="hidden" name="time" bind:value={seconds} />
