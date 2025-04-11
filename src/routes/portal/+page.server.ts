@@ -6,7 +6,7 @@ import { zod } from "sveltekit-superforms/adapters";
  
 export const load: PageServerLoad = async ({ params, locals: { supabase } }) => {
 
-	const { data, error: fetchError } = await supabase.from('tasks').select('*').limit(50);
+	const { data, error: fetchError } = await supabase.from('tasks').select('*').order('completed', {ascending: true});
 
 	if (fetchError) {
 		// Handle the error appropriately

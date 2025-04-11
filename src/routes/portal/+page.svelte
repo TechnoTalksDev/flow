@@ -6,7 +6,8 @@
 	import * as Sheet from '$lib/components/ui/sheet/index.js';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import { Button, buttonVariants } from '$lib/components/ui/button';
-	import { ChevronRight } from '@lucide/svelte';
+	import { ChevronRight, Trash2 } from '@lucide/svelte';
+	import { toast } from 'svelte-sonner';
 
 	let { data }: { data: PageData } = $props();
 
@@ -69,6 +70,24 @@
 			}
 		});
 	}
+
+  async function deleteTask(taskId: string) {
+    tasks = tasks.filter(task => task.id !== taskId);
+    toast.success("Task deleted")
+    const response = await fetch(`/portal/api/delete/${taskId}`, {
+      method: 'POST',
+      headers: {
+				'Content-Type': 'application/json'
+			}
+    });
+
+    console.log(response)
+
+    if (!response.ok) {
+      toast.error("Failed to delete task")
+      console.error('Failed to delete task', response);
+    }
+  }
 </script>
 
 <div class="max-w-screen flex h-fit flex-col items-center justify-center">
@@ -137,7 +156,9 @@
 
 								<Dialog.Content class="sm:max-w-[425px]">
 									<Dialog.Header>
-										<Dialog.Title class="text-2xl">{task.name}</Dialog.Title>
+										<Dialog.Title class="flex text-2xl w-full flex-row justify-between">
+                      {task.name}
+                    </Dialog.Title>
 										<Dialog.Description>{task.description}</Dialog.Description>
 										{#if isBeforeToday(task.dueDate)}
 											<p class="text-sm text-red-500">Due: {formatDate(task.dueDate)}</p>
@@ -164,13 +185,17 @@
 									</div>
 
 									<Dialog.Footer>
-										<a href="/portal/flow/{task.id}" class="w-full">
+                    
+                    <Button variant="destructive" class="hover:scale-105 transition-all scale-90" onclick={() => {deleteTask(task.id)}}><Trash2 /></Button>
+										
+                    <a href="/portal/flow/{task.id}" class="w-full">
 											<button
 												class="animate-shine inline-flex w-full items-center justify-center rounded-md border border-neutral-800 bg-[linear-gradient(110deg,#000103,45%,#1e2631,55%,#000103)] bg-[length:200%_100%] px-4 py-2 text-sm font-medium text-white transition-colors"
 											>
 												Start now
 											</button>
 										</a>
+                    
 									</Dialog.Footer>
 								</Dialog.Content>
 							</Dialog.Root>

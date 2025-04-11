@@ -14,6 +14,7 @@
 	import { TagsInput } from './components/ui/tags-input';
 	import { LoaderCircle } from '@lucide/svelte';
 	import { fade, slide } from 'svelte/transition';
+	import { toast } from 'svelte-sonner';
 
   const df = new DateFormatter("en-US", {
     dateStyle: "long"
@@ -24,7 +25,7 @@
 	const form = superForm(data.form, {
 		validators: zodClient(taskSchema),
     onSubmit: ({ action, formData, formElement, controller, submitter, cancel }) => {loading = true},
-    onResult: ({ result, formEl, cancel }) => {loading = false}
+    onResult: ({ result, formEl, cancel }) => {loading = false; toast.success(`"${$formData.name}" task created`)}
 	});
 
 	const { form: formData, enhance } = form;
