@@ -9,7 +9,8 @@
 	import { Badge } from "$lib/components/ui/badge/index.js";
 	import { ChevronRight, SquarePen, Trash2 } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
-  import { updateTask, getHoursAndMinutes, formatDate, isBeforeToday } from '$lib/utils';
+  import { updateTask, getHoursAndMinutes, formatDate, isBeforeToday, daysRemaining, isToday } from '$lib/utils';
+	import UpdateForm from '$lib/updateForm.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -19,7 +20,7 @@
 		tasks = data.tasks;
 	});
 
-	//$inspect(tasks);
+	$inspect(tasks);
 	async function deleteTask(taskId: string) {
 		tasks = tasks.filter((task) => task.id !== taskId);
 		toast.success('Task deleted');
@@ -85,11 +86,15 @@
 									{/if}
 								</div>
 
-
+								
 								{#if isBeforeToday(task.dueDate)}
 									<p class="text-red-500">{formatDate(task.dueDate)}</p>
 								{:else}
-									<p class="">{formatDate(task.dueDate)}</p>
+									{#if daysRemaining(task.dueDate) > 0 }
+										<p class="underline decoration-green-200">{daysRemaining(task.dueDate)} day(s) left</p>
+									{:else}
+									  <p class="text-red-500 font-semibold">Due today</p>
+									{/if}
 								{/if}
 
 								<div class="mt-1 flex flex-row flex-wrap items-center gap-2">
@@ -114,16 +119,29 @@
 									</Button>
 								</Dialog.Trigger>
 
-								<Dialog.Content class="sm:max-w-[425px]">
+								<Dialog.Content class="">
 									<Dialog.Header>
 										<Dialog.Title class="flex w-full flex-row justify-between text-2xl">
 											{task.name}
+												<Sheet.Root>
+													<Sheet.Trigger class="hover:scale-105">
+														<SquarePen class="mr-2"/>
+													</Sheet.Trigger>
+													<Sheet.Content class="p-0">
+														<UpdateForm	{task} id={task.id}/>
+													</Sheet.Content>
+												</Sheet.Root>
+												
 										</Dialog.Title>
 										<Dialog.Description>{task.description}</Dialog.Description>
 										{#if isBeforeToday(task.dueDate)}
-											<p class="text-sm text-red-500">Due: {formatDate(task.dueDate)}</p>
+											<p class="text-red-500"><strong>Overdue</strong>: {formatDate(task.dueDate)}</p>
 										{:else}
-											<p class="text-sm">Due: {formatDate(task.dueDate)}</p>
+											{#if daysRemaining(task.dueDate) > 0 }
+												<p class="">Due: {formatDate(task.dueDate)}</p>
+											{:else}
+												<p class="text-red-500 font-semibold">Due today</p>
+											{/if}
 										{/if}
 									</Dialog.Header>
 

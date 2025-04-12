@@ -26,7 +26,7 @@
    class={cn(
     buttonVariants({
      variant: "outline",
-     class: "w-[280px] justify-start text-left font-normal"
+     class: "w-full justify-start text-left font-normal"
     }),
     !value && "text-muted-foreground"
    )}

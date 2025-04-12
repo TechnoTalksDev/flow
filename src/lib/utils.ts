@@ -5,13 +5,24 @@ export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
 }
 
+export function daysRemaining(dateString: string) {
+	const date = new Date(dateString + 'T00:00:00');
+	const today = new Date();
+	
+	// Strip time from both dates to compare only the date part
+	date.setHours(0, 0, 0, 0);
+	today.setHours(0, 0, 0, 0);
+
+	return Math.ceil((date.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+}
 
 export function formatDate(dateString: string) {
-	const date = new Date(dateString);
+	const date = new Date(dateString + 'T00:00:00');
 	const day = date.getDate();
 	const year = date.getFullYear();
 	const month = date.toLocaleString('default', { month: 'long' });
-
+	//console.log(`${dateString} -> ${date}`)
+	//console.log(date)
 	const getOrdinal = (n: number) => {
 		if (n > 3 && n < 21) return 'th';
 		switch (n % 10) {
@@ -31,15 +42,27 @@ export function formatDate(dateString: string) {
 	return `${month} ${day}${ordinal} ${year}`;
 }
 
+
+export function isToday(dateString: string) {
+	const date = new Date(dateString + 'T00:00:00');
+	const today = new Date();
+	
+	// Strip time from both dates to compare only the date part
+	date.setHours(0, 0, 0, 0);
+	today.setHours(0, 0, 0, 0);
+
+	return date === today;
+}
+
 export function isBeforeToday(dateString: string) {
-	const inputDate = new Date(dateString);
+	const date = new Date(dateString + 'T00:00:00');
 	const today = new Date();
 
 	// Strip time from both dates to compare only the date part
-	inputDate.setHours(0, 0, 0, 0);
+	date.setHours(0, 0, 0, 0);
 	today.setHours(0, 0, 0, 0);
 
-	return inputDate < today;
+	return date < today;
 }
 
 export function getHoursAndMinutes(seconds: number) {
