@@ -16,28 +16,32 @@
 	import { fade, slide } from 'svelte/transition';
 	import { toast } from 'svelte-sonner';
 
-  const df = new DateFormatter("en-US", {
-    dateStyle: "long"
-  });
+	const df = new DateFormatter('en-US', {
+		dateStyle: 'long'
+	});
 
 	let { data }: { data: { form: SuperValidated<Infer<TaskSchema>> } } = $props();
 
 	const form = superForm(data.form, {
 		validators: zodClient(taskSchema),
-    onSubmit: ({ action, formData, formElement, controller, submitter, cancel }) => {loading = true},
-    onResult: ({ result, formEl, cancel }) => {loading = false; toast.success(`"${$formData.name}" task created`)}
+		onSubmit: ({ action, formData, formElement, controller, submitter, cancel }) => {
+			loading = true;
+		},
+		onResult: ({ result, formEl, cancel }) => {
+			loading = false;
+			toast.success(`"${$formData.name}" task created`);
+		}
 	});
 
 	const { form: formData, enhance } = form;
 
-  let loading = $state(false);
+	let loading = $state(false);
 
+	let hours = $state(0);
+	let minutes = $state(0);
 
-  let hours = $state(0);
-  let minutes = $state(0);
-
-  let seconds = $derived(((hours * 60) + minutes) * 60)
-  //$inspect(seconds)
+	let seconds = $derived((hours * 60 + minutes) * 60);
+	//$inspect(seconds)
 </script>
 
 <form method="POST" action="/portal?/create" use:enhance>
@@ -65,8 +69,8 @@
 				<Form.Control>
 					{#snippet children({ props })}
 						<Form.Label>Description</Form.Label>
-            <Textarea {...props} bind:value={$formData.description}/>
-          {/snippet}
+						<Textarea {...props} bind:value={$formData.description} />
+					{/snippet}
 				</Form.Control>
 				<Form.Description
 					>Describe what you need to get done, it can lead to you being <a
@@ -77,7 +81,7 @@
 				<Form.FieldErrors />
 			</Form.Field>
 
-      <!--
+			<!--
 			<Form.Field {form} name="done">
 				<Form.Control>
 					{#snippet children({ props })}
@@ -101,8 +105,8 @@
 				<Form.Control>
 					{#snippet children({ props })}
 						<Form.Label>Due</Form.Label>
-						<DatePicker bind:parsed={$formData.dueDate}/>
-            <input type="hidden" name="dueDate" value={$formData.dueDate} />
+						<DatePicker bind:parsed={$formData.dueDate} />
+						<input type="hidden" name="dueDate" value={$formData.dueDate} />
 					{/snippet}
 				</Form.Control>
 				<Form.Description>When do you need it done by?</Form.Description>
@@ -114,12 +118,28 @@
 					{#snippet children({ props })}
 						<Form.Label>Flow</Form.Label>
 						<div class="flex flex-row items-center gap-2">
-              <Input {...props} name="" type="number" class="w-[60px] p-1" placeholder="0" bind:value = {hours}/>
-              <Form.Label class="mr-4">H</Form.Label>
-              <Input {...props} name="" type="number" class="w-[60px] p-1" max={59} min={0} placeholder="0" bind:value = {minutes}/>
-              <Form.Label>M</Form.Label>
-            </div>
-            <input type="hidden" name="time" bind:value={seconds} />
+							<Input
+								{...props}
+								name=""
+								type="number"
+								class="w-[60px] p-1"
+								placeholder="0"
+								bind:value={hours}
+							/>
+							<Form.Label class="mr-4">H</Form.Label>
+							<Input
+								{...props}
+								name=""
+								type="number"
+								class="w-[60px] p-1"
+								max={59}
+								min={0}
+								placeholder="0"
+								bind:value={minutes}
+							/>
+							<Form.Label>M</Form.Label>
+						</div>
+						<input type="hidden" name="time" bind:value={seconds} />
 					{/snippet}
 				</Form.Control>
 				<Form.Description>How long does your flow state need to be?</Form.Description>
@@ -130,27 +150,24 @@
 				<Form.Control>
 					{#snippet children({ props })}
 						<Form.Label>Tags</Form.Label>
-            <TagsInput bind:value={$formData.tags}/>
-            <input type="hidden" name="tags" value={JSON.stringify($formData.tags)} />
+						<TagsInput bind:value={$formData.tags} />
+						<input type="hidden" name="tags" value={JSON.stringify($formData.tags)} />
 					{/snippet}
-				</Form.Control> 
+				</Form.Control>
 				<Form.Description>Help you organize your tasks</Form.Description>
 				<Form.FieldErrors />
 			</Form.Field>
-
 		</Card.Content>
 
 		<Card.Footer class="flex justify-end">
 			<Form.Button type="submit" disabled={loading}>Create</Form.Button>
-
 		</Card.Footer>
 		{#if loading}
 			<div class="mt-4 flex items-center justify-center" transition:slide>
-				<div in:fade={{duration: 1500}}>
-				<LoaderCircle class="animate-spin" />
+				<div in:fade={{ duration: 1500 }}>
+					<LoaderCircle class="animate-spin" />
 				</div>
 			</div>
 		{/if}
-
 	</Card.Root>
 </form>

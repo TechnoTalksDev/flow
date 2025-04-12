@@ -66,7 +66,7 @@
 
 			toast.success('Task completed :)', {
 				description: 'Your XP will be added to your profile!',
-        duration: 5000,
+				duration: 5000,
 				action: {
 					label: 'Redirecting to portal',
 					onClick: () => {
@@ -79,7 +79,7 @@
 		} else {
 			toast.error('Task completed again :)', {
 				description: "Since this isn' your first time completing this task, you won't recieving XP",
-        duration: 5000,
+				duration: 5000,
 				action: {
 					label: 'Redirecting to portal',
 					onClick: () => {
@@ -106,7 +106,7 @@
 
 		toast.error('Task failed :(', {
 			description: 'You wont earn any XP for this task',
-      duration: 5000,
+			duration: 5000,
 			action: {
 				label: 'Redirecting to portal',
 				onClick: () => {
@@ -198,7 +198,7 @@
 				<AlertDialog.Root>
 					<AlertDialog.Trigger class="w-full">
 						<button
-							class="animate-shine inline-flex w-full items-center justify-center rounded-md border border-neutral-800 bg-[linear-gradient(110deg,#000103,45%,#1e2631,55%,#000103)] bg-[length:200%_100%] px-4 py-2 text-sm font-medium text-white transition-colors"
+							class="inline-flex w-full animate-shine items-center justify-center rounded-md border border-neutral-800 bg-[linear-gradient(110deg,#000103,45%,#1e2631,55%,#000103)] bg-[length:200%_100%] px-4 py-2 text-sm font-medium text-white transition-colors"
 							onclick={startTimer}
 							disabled={started}
 						>
@@ -214,7 +214,7 @@
 						</AlertDialog.Description>
 
 						<h1
-							class="animate-shine inline-flex bg-[linear-gradient(110deg,#939393,45%,#1e2631,55%,#939393)] bg-[length:200%_100%] bg-clip-text text-8xl font-medium text-transparent"
+							class="inline-flex animate-shine bg-[linear-gradient(110deg,#939393,45%,#1e2631,55%,#939393)] bg-[length:200%_100%] bg-clip-text text-8xl font-medium text-transparent"
 						>
 							{formatTime(remaining)}
 						</h1>

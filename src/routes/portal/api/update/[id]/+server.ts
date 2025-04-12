@@ -1,12 +1,15 @@
 import type { RequestHandler } from './$types';
 import { error, json } from '@sveltejs/kit';
 
-
-export const POST: RequestHandler = async ({ request,params, locals: { supabase, safeGetSession } }) => {
-  const body = await request.json();
-  //console.dir(body, {depth: null})
+export const POST: RequestHandler = async ({
+	request,
+	params,
+	locals: { supabase, safeGetSession }
+}) => {
+	const body = await request.json();
+	//console.dir(body, {depth: null})
 	const taskId = params.id;
-  //console.log(`TASK ID -> ${taskId}`)
+	//console.log(`TASK ID -> ${taskId}`)
 	if (!taskId) {
 		throw error(400, { message: 'Missing task ID' });
 	}
@@ -18,23 +21,19 @@ export const POST: RequestHandler = async ({ request,params, locals: { supabase,
 	}
 
 	const userId = session.user?.id;
-  
+
 	try {
-    const { error: updateError } = await supabase
-      .from('tasks')
-      .update(body)
-      .eq('id', taskId);
+		const { error: updateError } = await supabase.from('tasks').update(body).eq('id', taskId);
 
-    if (updateError) {
-      console.error('Error updating cart:', updateError);
-      throw error(500, { message: 'Failed to update cart' });
-    }
-
+		if (updateError) {
+			console.error('Error updating cart:', updateError);
+			throw error(500, { message: 'Failed to update cart' });
+		}
 
 		// Return success response
 		return json(
 			{
-				success: true,
+				success: true
 			},
 			{ status: 200 }
 		);
@@ -46,5 +45,4 @@ export const POST: RequestHandler = async ({ request,params, locals: { supabase,
 		}
 		throw e; // Re-throw SvelteKit errors
 	}
-  
 };

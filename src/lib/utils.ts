@@ -1,5 +1,5 @@
-import { type ClassValue, clsx } from "clsx";
-import { twMerge } from "tailwind-merge";
+import { type ClassValue, clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
@@ -8,7 +8,7 @@ export function cn(...inputs: ClassValue[]) {
 export function daysRemaining(dateString: string) {
 	const date = new Date(dateString + 'T00:00:00');
 	const today = new Date();
-	
+
 	// Strip time from both dates to compare only the date part
 	date.setHours(0, 0, 0, 0);
 	today.setHours(0, 0, 0, 0);
@@ -42,11 +42,10 @@ export function formatDate(dateString: string) {
 	return `${month} ${day}${ordinal} ${year}`;
 }
 
-
 export function isToday(dateString: string) {
 	const date = new Date(dateString + 'T00:00:00');
 	const today = new Date();
-	
+
 	// Strip time from both dates to compare only the date part
 	date.setHours(0, 0, 0, 0);
 	today.setHours(0, 0, 0, 0);
@@ -81,7 +80,6 @@ export async function updateTask(taskId: string, task: object) {
 	});
 }
 
-
 export function formatTime(seconds: number) {
 	const mins = Math.floor(seconds / 60)
 		.toString()
@@ -91,15 +89,14 @@ export function formatTime(seconds: number) {
 }
 
 export function delay(ms: number) {
-	return new Promise( resolve => setTimeout(resolve, ms) );
+	return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-
 export async function addXp(amount: number) {
-	console.log(`Adding ${amount} XP`)
+	console.log(`Adding ${amount} XP`);
 	const response = await fetch(`/portal/api/xp/add/${amount}`, {
-		method: 'POST',
+		method: 'POST'
 	});
 
-	console.log(response)
+	console.log(response);
 }

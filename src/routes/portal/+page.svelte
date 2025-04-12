@@ -6,10 +6,17 @@
 	import * as Sheet from '$lib/components/ui/sheet/index.js';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import { Button, buttonVariants } from '$lib/components/ui/button';
-	import { Badge } from "$lib/components/ui/badge/index.js";
+	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { ChevronRight, SquarePen, Trash2 } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
-  import { updateTask, getHoursAndMinutes, formatDate, isBeforeToday, daysRemaining, isToday } from '$lib/utils';
+	import {
+		updateTask,
+		getHoursAndMinutes,
+		formatDate,
+		isBeforeToday,
+		daysRemaining,
+		isToday
+	} from '$lib/utils';
 	import UpdateForm from '$lib/updateForm.svelte';
 
 	let { data }: { data: PageData } = $props();
@@ -86,15 +93,14 @@
 									{/if}
 								</div>
 
-								
 								{#if isBeforeToday(task.dueDate)}
 									<p class="text-red-500">{formatDate(task.dueDate)}</p>
+								{:else if daysRemaining(task.dueDate) > 0}
+									<p class="underline decoration-green-200">
+										{daysRemaining(task.dueDate)} day(s) left
+									</p>
 								{:else}
-									{#if daysRemaining(task.dueDate) > 0 }
-										<p class="underline decoration-green-200">{daysRemaining(task.dueDate)} day(s) left</p>
-									{:else}
-									  <p class="text-red-500 font-semibold">Due today</p>
-									{/if}
+									<p class="font-semibold text-red-500">Due today</p>
 								{/if}
 
 								<div class="mt-1 flex flex-row flex-wrap items-center gap-2">
@@ -123,25 +129,24 @@
 									<Dialog.Header>
 										<Dialog.Title class="flex w-full flex-row justify-between text-2xl">
 											{task.name}
-												<Sheet.Root>
-													<Sheet.Trigger class="hover:scale-105">
-														<SquarePen class="mr-2"/>
-													</Sheet.Trigger>
-													<Sheet.Content class="p-0">
-														<UpdateForm	{task} id={task.id}/>
-													</Sheet.Content>
-												</Sheet.Root>
-												
+											<Sheet.Root>
+												<Sheet.Trigger class="hover:scale-105">
+													<SquarePen class="mr-2" />
+												</Sheet.Trigger>
+												<Sheet.Content class="p-0">
+													<UpdateForm {task} id={task.id} />
+												</Sheet.Content>
+											</Sheet.Root>
 										</Dialog.Title>
 										<Dialog.Description>{task.description}</Dialog.Description>
 										{#if isBeforeToday(task.dueDate)}
-											<p class="text-red-500"><strong>Overdue</strong>: {formatDate(task.dueDate)}</p>
+											<p class="text-red-500">
+												<strong>Overdue</strong>: {formatDate(task.dueDate)}
+											</p>
+										{:else if daysRemaining(task.dueDate) > 0}
+											<p class="">Due: {formatDate(task.dueDate)}</p>
 										{:else}
-											{#if daysRemaining(task.dueDate) > 0 }
-												<p class="">Due: {formatDate(task.dueDate)}</p>
-											{:else}
-												<p class="text-red-500 font-semibold">Due today</p>
-											{/if}
+											<p class="font-semibold text-red-500">Due today</p>
 										{/if}
 									</Dialog.Header>
 
@@ -170,12 +175,11 @@
 												deleteTask(task.id);
 											}}><Trash2 /></Button
 										>
-										
-										{#if !task.failed}
 
+										{#if !task.failed}
 											<a href="/portal/flow/{task.id}" class="w-full" target="_blank">
 												<button
-													class="animate-shine inline-flex w-full items-center justify-center rounded-md border border-neutral-800 bg-[linear-gradient(110deg,#000103,45%,#1e2631,55%,#000103)] bg-[length:200%_100%] px-4 py-2 text-sm font-medium text-white transition-colors"
+													class="inline-flex w-full animate-shine items-center justify-center rounded-md border border-neutral-800 bg-[linear-gradient(110deg,#000103,45%,#1e2631,55%,#000103)] bg-[length:200%_100%] px-4 py-2 text-sm font-medium text-white transition-colors"
 												>
 													Start now
 												</button>

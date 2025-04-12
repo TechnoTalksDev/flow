@@ -50,16 +50,22 @@
 		//console.log(task);
 		//console.log(id);
 
-    if (!(name.length > 2 && description.length > 2 && dueDate && seconds > 0)) {
-      toast.error('Please fill out all fields properly');
-      loading = false;
-      return;
-    }
-    if (task.name == name && task.description == description && task.dueDate == dueDate && task.tags == tags && task.time == seconds) {
-      toast.warning('No changes detected');
-      loading = false;
-      return;
-    }
+		if (!(name.length > 2 && description.length > 2 && dueDate && seconds > 0)) {
+			toast.error('Please fill out all fields properly');
+			loading = false;
+			return;
+		}
+		if (
+			task.name == name &&
+			task.description == description &&
+			task.dueDate == dueDate &&
+			task.tags == tags &&
+			task.time == seconds
+		) {
+			toast.warning('No changes detected');
+			loading = false;
+			return;
+		}
 
 		const response = await fetch(`/portal/api/update/${id}`, {
 			method: 'POST',
@@ -79,10 +85,9 @@
 			toast.error('Failed to update task');
 			console.error('Failed to update task', response);
 		} else {
-      invalidateAll();
+			invalidateAll();
 
 			toast.success(`"${name}" task updated`);
-      
 		}
 
 		loading = false;
@@ -100,23 +105,23 @@
 		</Card.Header>
 
 		<Card.Content class="flex flex-col gap-6">
-      <div>
-        <Label>Name</Label>
-        <Input minlength={2} maxlength={50} bind:value={name} required />
+			<div>
+				<Label>Name</Label>
+				<Input minlength={2} maxlength={50} bind:value={name} required />
 
-        <Card.Description>Name your task</Card.Description>
-      </div>
+				<Card.Description>Name your task</Card.Description>
+			</div>
 
 			<div>
-        <Label>Description</Label>
-        <Textarea bind:value={description} minlength={2}  required/>
-        <Card.Description
-          >Describe what you need to get done, it can lead to you being <a
-            href="https://www.forbes.com/sites/markmurphy/2018/04/15/neuroscience-explains-why-you-need-to-write-down-your-goals-if-you-actually-want-to-achieve-them/"
-            class="underline">23%</a
-          > more productive!</Card.Description
-        >
-      </div>
+				<Label>Description</Label>
+				<Textarea bind:value={description} minlength={2} required />
+				<Card.Description
+					>Describe what you need to get done, it can lead to you being <a
+						href="https://www.forbes.com/sites/markmurphy/2018/04/15/neuroscience-explains-why-you-need-to-write-down-your-goals-if-you-actually-want-to-achieve-them/"
+						class="underline">23%</a
+					> more productive!</Card.Description
+				>
+			</div>
 
 			<!--
 			<Form.Field {form} name="done">
@@ -139,37 +144,45 @@
       -->
 
 			<div>
-        <Label>Due</Label>
-        <br/>
-        <DatePicker bind:parsed={dueDate} />
-        <Card.Description>When do you need it done by?</Card.Description>
-      </div>
+				<Label>Due</Label>
+				<br />
+				<DatePicker bind:parsed={dueDate} />
+				<Card.Description>When do you need it done by?</Card.Description>
+			</div>
 
 			<div>
-        <Label>Flow</Label>
-        <div class="flex flex-row items-center gap-2">
-          <Input name="" type="number" class="w-[60px] p-1" placeholder="0" bind:value={hours} min=0 required/>
-          <Label class="mr-4">H</Label>
-          <Input
-            name=""
-            type="number"
-            class="w-[60px] p-1"
-            max={59}
-            min={0}
-            placeholder="0"
-            bind:value={minutes}
-            required
-          />
-          <Label>M</Label>
-        </div>
-        <Card.Description>How long does your flow state need to be?</Card.Description>
-      </div>
+				<Label>Flow</Label>
+				<div class="flex flex-row items-center gap-2">
+					<Input
+						name=""
+						type="number"
+						class="w-[60px] p-1"
+						placeholder="0"
+						bind:value={hours}
+						min="0"
+						required
+					/>
+					<Label class="mr-4">H</Label>
+					<Input
+						name=""
+						type="number"
+						class="w-[60px] p-1"
+						max={59}
+						min={0}
+						placeholder="0"
+						bind:value={minutes}
+						required
+					/>
+					<Label>M</Label>
+				</div>
+				<Card.Description>How long does your flow state need to be?</Card.Description>
+			</div>
 
 			<div>
-        <Label>Tags</Label>
-        <TagsInput bind:value={tags}/>
-        <Card.Description>Help you organize your tasks</Card.Description>
-      </div>
+				<Label>Tags</Label>
+				<TagsInput bind:value={tags} />
+				<Card.Description>Help you organize your tasks</Card.Description>
+			</div>
 		</Card.Content>
 
 		<Card.Footer class="flex justify-end">

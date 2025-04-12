@@ -3,6 +3,7 @@
 Designed to get you into the flow state
 
 ## Features
+
 **TO BE LISTED**
 
 ## Developing
@@ -17,6 +18,7 @@ npm run dev -- --open
 ```
 
 ### Formatting
+
 Please run `npm run format` before commiting to allow prettier to formate all changed files.
 
 ## Building
