@@ -6,8 +6,10 @@
 	import * as Sheet from '$lib/components/ui/sheet/index.js';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import { Button, buttonVariants } from '$lib/components/ui/button';
-	import { ChevronRight, Trash2 } from '@lucide/svelte';
+	import { Badge } from "$lib/components/ui/badge/index.js";
+	import { ChevronRight, SquarePen, Trash2 } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
+  import { updateTask, getHoursAndMinutes, formatDate, isBeforeToday } from '$lib/utils';
 
 	let { data }: { data: PageData } = $props();
 
@@ -18,83 +20,35 @@
 	});
 
 	//$inspect(tasks);
-
-	function formatDate(dateString: string) {
-		const date = new Date(dateString);
-		const day = date.getDate();
-		const year = date.getFullYear();
-		const month = date.toLocaleString('default', { month: 'long' });
-
-		const getOrdinal = (n: number) => {
-			if (n > 3 && n < 21) return 'th';
-			switch (n % 10) {
-				case 1:
-					return 'st';
-				case 2:
-					return 'nd';
-				case 3:
-					return 'rd';
-				default:
-					return 'th';
-			}
-		};
-
-		const ordinal = getOrdinal(day);
-
-		return `${month} ${day}${ordinal} ${year}`;
-	}
-
-	function isBeforeToday(dateString: string) {
-		const inputDate = new Date(dateString);
-		const today = new Date();
-
-		// Strip time from both dates to compare only the date part
-		inputDate.setHours(0, 0, 0, 0);
-		today.setHours(0, 0, 0, 0);
-
-		return inputDate < today;
-	}
-
-	function getHoursAndMinutes(seconds: number) {
-		const hours = Math.floor(seconds / 3600);
-		const minutes = Math.floor((seconds % 3600) / 60);
-		return { hours, minutes };
-	}
-
-	async function updateTask(taskId: string, task: object) {
-		const response = await fetch(`/portal/api/update/${taskId}`, {
+	async function deleteTask(taskId: string) {
+		tasks = tasks.filter((task) => task.id !== taskId);
+		toast.success('Task deleted');
+		const response = await fetch(`/portal/api/delete/${taskId}`, {
 			method: 'POST',
-			body: JSON.stringify(task),
 			headers: {
 				'Content-Type': 'application/json'
 			}
 		});
+
+		console.log(response);
+
+		if (!response.ok) {
+			toast.error('Failed to delete task');
+			console.error('Failed to delete task', response);
+		}
 	}
-
-  async function deleteTask(taskId: string) {
-    tasks = tasks.filter(task => task.id !== taskId);
-    toast.success("Task deleted")
-    const response = await fetch(`/portal/api/delete/${taskId}`, {
-      method: 'POST',
-      headers: {
-				'Content-Type': 'application/json'
-			}
-    });
-
-    console.log(response)
-
-    if (!response.ok) {
-      toast.error("Failed to delete task")
-      console.error('Failed to delete task', response);
-    }
-  }
 </script>
 
 <div class="max-w-screen flex h-fit flex-col items-center justify-center">
 	{#if data.tasks}
-		<h1 class="my-8 text-4xl font-semibold">Your tasks</h1>
+		<h1 class="mb-4 mt-8 text-4xl font-semibold">Your tasks</h1>
 		<Sheet.Root>
-			<Sheet.Trigger class={buttonVariants({ variant: 'default' })}>Create</Sheet.Trigger>
+			<Sheet.Trigger class="w-full">
+				<Button variant="secondary" class="mb-8"
+					>Create
+					<SquarePen />
+				</Button>
+			</Sheet.Trigger>
 			<Sheet.Content class="p-0">
 				<CreateForm {data} />
 			</Sheet.Content>
@@ -108,7 +62,6 @@
 					<Card.Content class="flex flex-row items-center justify-between">
 						<div class="flex flex-row items-center">
 							<Checkbox
-                
 								class="mr-3 scale-125"
 								bind:checked={task.completed}
 								onCheckedChange={() => {
@@ -116,15 +69,22 @@
 								}}
 							/>
 							<div class="flex flex-col">
-								{#if !task.completed}
-									<Card.Title>
-										{task.name}
-									</Card.Title>
-								{:else}
-									<Card.Title class="line-through opacity-50">
-										{task.name}
-									</Card.Title>
-								{/if}
+								<div class="flex flex-row items-center gap-2">
+									{#if !task.completed}
+										<Card.Title>
+											{task.name}
+										</Card.Title>
+									{:else}
+										<Card.Title class="line-through opacity-50">
+											{task.name}
+										</Card.Title>
+									{/if}
+
+									{#if task.failed}
+										<Badge variant="destructive" class="w-fit">Failed</Badge>
+									{/if}
+								</div>
+
 
 								{#if isBeforeToday(task.dueDate)}
 									<p class="text-red-500">{formatDate(task.dueDate)}</p>
@@ -156,9 +116,9 @@
 
 								<Dialog.Content class="sm:max-w-[425px]">
 									<Dialog.Header>
-										<Dialog.Title class="flex text-2xl w-full flex-row justify-between">
-                      {task.name}
-                    </Dialog.Title>
+										<Dialog.Title class="flex w-full flex-row justify-between text-2xl">
+											{task.name}
+										</Dialog.Title>
 										<Dialog.Description>{task.description}</Dialog.Description>
 										{#if isBeforeToday(task.dueDate)}
 											<p class="text-sm text-red-500">Due: {formatDate(task.dueDate)}</p>
@@ -185,17 +145,26 @@
 									</div>
 
 									<Dialog.Footer>
-                    
-                    <Button variant="destructive" class="hover:scale-105 transition-all scale-90" onclick={() => {deleteTask(task.id)}}><Trash2 /></Button>
+										<Button
+											variant="destructive"
+											class="scale-90 transition-all hover:scale-105"
+											onclick={() => {
+												deleteTask(task.id);
+											}}><Trash2 /></Button
+										>
 										
-                    <a href="/portal/flow/{task.id}" class="w-full">
-											<button
-												class="animate-shine inline-flex w-full items-center justify-center rounded-md border border-neutral-800 bg-[linear-gradient(110deg,#000103,45%,#1e2631,55%,#000103)] bg-[length:200%_100%] px-4 py-2 text-sm font-medium text-white transition-colors"
-											>
-												Start now
-											</button>
-										</a>
-                    
+										{#if !task.failed}
+
+											<a href="/portal/flow/{task.id}" class="w-full" target="_blank">
+												<button
+													class="animate-shine inline-flex w-full items-center justify-center rounded-md border border-neutral-800 bg-[linear-gradient(110deg,#000103,45%,#1e2631,55%,#000103)] bg-[length:200%_100%] px-4 py-2 text-sm font-medium text-white transition-colors"
+												>
+													Start now
+												</button>
+											</a>
+										{:else}
+											<Button variant="destructive" class="w-full" disabled={true}>Failed</Button>
+										{/if}
 									</Dialog.Footer>
 								</Dialog.Content>
 							</Dialog.Root>

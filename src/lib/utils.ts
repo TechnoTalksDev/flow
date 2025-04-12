@@ -4,3 +4,79 @@ import { twMerge } from "tailwind-merge";
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
 }
+
+
+export function formatDate(dateString: string) {
+	const date = new Date(dateString);
+	const day = date.getDate();
+	const year = date.getFullYear();
+	const month = date.toLocaleString('default', { month: 'long' });
+
+	const getOrdinal = (n: number) => {
+		if (n > 3 && n < 21) return 'th';
+		switch (n % 10) {
+			case 1:
+				return 'st';
+			case 2:
+				return 'nd';
+			case 3:
+				return 'rd';
+			default:
+				return 'th';
+		}
+	};
+
+	const ordinal = getOrdinal(day);
+
+	return `${month} ${day}${ordinal} ${year}`;
+}
+
+export function isBeforeToday(dateString: string) {
+	const inputDate = new Date(dateString);
+	const today = new Date();
+
+	// Strip time from both dates to compare only the date part
+	inputDate.setHours(0, 0, 0, 0);
+	today.setHours(0, 0, 0, 0);
+
+	return inputDate < today;
+}
+
+export function getHoursAndMinutes(seconds: number) {
+	const hours = Math.floor(seconds / 3600);
+	const minutes = Math.floor((seconds % 3600) / 60);
+	return { hours, minutes };
+}
+
+export async function updateTask(taskId: string, task: object) {
+	const response = await fetch(`/portal/api/update/${taskId}`, {
+		method: 'POST',
+		body: JSON.stringify(task),
+		headers: {
+			'Content-Type': 'application/json'
+		}
+	});
+}
+
+
+export function formatTime(seconds: number) {
+	const mins = Math.floor(seconds / 60)
+		.toString()
+		.padStart(2, '0');
+	const secs = (seconds % 60).toString().padStart(2, '0');
+	return `${mins}:${secs}`;
+}
+
+export function delay(ms: number) {
+	return new Promise( resolve => setTimeout(resolve, ms) );
+}
+
+
+export async function addXp(amount: number) {
+	console.log(`Adding ${amount} XP`)
+	const response = await fetch(`/portal/api/xp/add/${amount}`, {
+		method: 'POST',
+	});
+
+	console.log(response)
+}
