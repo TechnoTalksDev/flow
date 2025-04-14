@@ -53,19 +53,23 @@
 	>
 		{#each navs as item}
 			{#if url.pathname === item.link}
+			<a href={item.link}>
 				<DockIcon {mouseX} {magnification} {distance} class="rounded-full p-2 bg-gray-100 hover:bg-gray-200">
 					{@const Icon = item.icon}
-					<a href={item.link}>
+					
 						<Icon size={20} strokeWidth={1.2} />
-					</a>
+					
 				</DockIcon>
+			</a>
 			{:else}
+			<a href={item.link}>
 				<DockIcon {mouseX} {magnification} {distance} class="rounded-full p-2 hover:bg-gray-200">
 					{@const Icon = item.icon}
-					<a href={item.link}>
+					
 						<Icon size={20} strokeWidth={1.2} />
-					</a>
+					
 				</DockIcon>
+			</a>
 			{/if}
 		{/each}
 	</Dock>
