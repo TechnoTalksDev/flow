@@ -16,8 +16,8 @@ export const load: PageServerLoad = async ({ params, locals: { supabase } }) => 
 	}
 
 	return {
+		tasks: data,
 		form: await superValidate(zod(taskSchema)),
-		tasks: data
 	};
 };
 

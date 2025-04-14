@@ -4,14 +4,17 @@
 	import * as AlertDialog from '$lib/components/ui/alert-dialog/index.js';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 	import { Button, buttonVariants } from '$lib/components/ui/button';
-	import { ChevronRight, HeartCrack, SquarePen, Trash2 } from '@lucide/svelte';
+	import { ChevronLeft, ChevronRight, HeartCrack, SquarePen, Trash2 } from '@lucide/svelte';
 	import {
 		updateTask,
 		getHoursAndMinutes,
 		formatDate,
 		isBeforeToday,
 		delay,
-		addXp
+		addXp,
+
+		daysRemaining
+
 	} from '$lib/utils';
 	import { toast } from 'svelte-sonner';
 	import { goto } from '$app/navigation';
@@ -42,12 +45,68 @@
 
 	$inspect(task);
 
-	let duration = $state(task.time); // 5 minutes in seconds
+	let duration = $state(task.time);
 	let remaining = $state(duration);
 	let started = $state(false);
 	let intervalId: NodeJS.Timer | null = null;
+	let done = $state(false);
 
-	function startTimer() {
+	$effect(() => {
+		//console.log(remaining, done)
+		if (!(remaining > 0)) {
+			delay(60000).then(() => {
+				if (!done) {
+					stopTimer();
+				}
+			});
+		}
+	});
+
+	async function startTimer() {
+		if (!task.started) {
+			const now = new Date().toISOString();
+			task.started = now;
+
+			await updateTask(task.id, task);
+			console.log('Set timestamp');
+		} else {
+			const startTime = new Date(task.started);
+			const now = new Date();
+			const diff = now.getTime() - startTime.getTime();
+			const diffInSeconds = Math.floor(diff / 1000);
+			console.log(diffInSeconds);
+			if (task.time > diffInSeconds) {
+				remaining = task.time - diffInSeconds;
+				console.log('Resumed timer');
+			} else {
+				remaining = 0;
+				if (task.first) {
+					toast.error('Task failed :(', {
+						description: 'The timer has already ended. You will not be recieving XP',
+						duration: 5000,
+						action: {
+							label: 'Redirecting to portal',
+							onClick: () => {
+								//goto('/portal')
+							}
+						},
+
+						position: 'top-center'
+					});
+					task.first = false;
+					task.failed = true;
+					updateTask(task.id, task);
+
+					await delay(1000);
+
+					goto('/portal');
+				}
+				console.log('Timer already ended');
+			}
+			console.log('Existing timestamp');
+			console.log(diffInSeconds);
+			console.log(task.started);
+		}
 		started = true;
 		setInterval(() => {
 			if (remaining > 0) {
@@ -60,10 +119,14 @@
 	async function finishTask() {
 		clearInterval(intervalId);
 		intervalId = null;
+		done = true;
 
 		if (task.first) {
-			await addXp(task.time);
-
+			if (remaining > 0) {
+				await addXp(duration - remaining);
+			} else {
+				await addXp(task.time);
+			}
 			toast.success('Task completed :)', {
 				description: 'Your XP will be added to your profile!',
 				duration: 5000,
@@ -118,6 +181,7 @@
 		});
 
 		task.failed = true;
+		task.first = false;
 		updateTask(task.id, task);
 
 		await delay(1000);
@@ -164,19 +228,21 @@
 		class="w-[350px] cursor-pointer shadow-none transition-shadow duration-300 hover:shadow-md hover:shadow-gray-400"
 	>
 		<Card.Content class="sm:max-w-[425px]">
-			<Card.Header>
-				<Card.Title class="flex w-full flex-row justify-between text-2xl">
-					{task.name}
-				</Card.Title>
-				<Card.Description>{task.description}</Card.Description>
-				{#if isBeforeToday(task.dueDate)}
-					<p class="text-sm text-red-500">Due: {formatDate(task.dueDate)}</p>
-				{:else}
-					<p class="text-sm">Due: {formatDate(task.dueDate)}</p>
-				{/if}
-			</Card.Header>
+			<Card.Title class="flex w-full flex-row justify-between text-2xl">
+				{task.name}
+			</Card.Title>
+			<Card.Description class="">{task.description}</Card.Description>
+			{#if isBeforeToday(task.dueDate)}
+				<p class="text-red-500">
+					<strong>Overdue</strong>: {formatDate(task.dueDate)}
+				</p>
+			{:else if daysRemaining(task.dueDate) > 0}
+				<p class="">Due: {formatDate(task.dueDate)}</p>
+			{:else}
+				<p class="font-semibold text-red-500">Due today</p>
+			{/if}
 
-			<div class="w-fit flex-row text-xl">
+			<div class="w-fit flex-row text-xl my-4">
 				ETA: {getHoursAndMinutes(task.time).hours} H {getHoursAndMinutes(task.time).minutes} M
 			</div>
 
@@ -193,17 +259,27 @@
 			</div>
 		</Card.Content>
 
-		<Card.Footer>
+		<Card.Footer class="flex w-full flex-col gap-2">
 			{#if !task.failed}
 				<AlertDialog.Root>
 					<AlertDialog.Trigger class="w-full">
-						<button
-							class="inline-flex w-full animate-shine items-center justify-center rounded-md border border-neutral-800 bg-[linear-gradient(110deg,#000103,45%,#1e2631,55%,#000103)] bg-[length:200%_100%] px-4 py-2 text-sm font-medium text-white transition-colors"
-							onclick={startTimer}
-							disabled={started}
-						>
-							Start now
-						</button>
+						{#if !task.started}
+							<button
+								class="inline-flex w-full animate-shine items-center justify-center rounded-md border border-neutral-800 bg-[linear-gradient(110deg,#000103,45%,#1e2631,55%,#000103)] bg-[length:200%_100%] px-4 py-2 text-sm font-medium text-white transition-colors"
+								onclick={startTimer}
+								disabled={started}
+							>
+								Start now
+							</button>
+						{:else}
+							<button
+								class="inline-flex w-full animate-shine items-center justify-center rounded-md border border-neutral-800 bg-[linear-gradient(110deg,#000103,45%,#1e2631,55%,#000103)] bg-[length:200%_100%] px-4 py-2 text-sm font-medium text-white transition-colors"
+								onclick={startTimer}
+								disabled={started}
+							>
+								Resume
+							</button>
+						{/if}
 					</AlertDialog.Trigger>
 					<AlertDialog.Content
 						class="flex flex-col items-center justify-center border-none bg-white/10 text-center backdrop-blur-md"
@@ -219,8 +295,19 @@
 							{formatTime(remaining)}
 						</h1>
 
+						{#if !(remaining > 0)}
+							<AlertDialog.Description class="text-gray-300">
+								Flow will <span class="text-red-500">auto fail</span> in <strong>1 minute</strong>
+							</AlertDialog.Description>
+						{/if}
+
 						<AlertDialog.Footer>
 							{#if remaining > 0}
+								<AlertDialog.Cancel
+									onclick={finishTask}
+									class="border-none bg-green-500 text-white transition-all duration-300"
+									>Done</AlertDialog.Cancel
+								>
 								<Tooltip.Provider>
 									<Tooltip.Root>
 										<Tooltip.Trigger>
@@ -282,6 +369,8 @@
 			{:else}
 				<Button variant="destructive" class="w-full" disabled={true} href="/portal">Failed</Button>
 			{/if}
+
+			<Button class="w-full" variant="secondary" name="back" href="/portal"><ChevronLeft /></Button>
 		</Card.Footer>
 	</Card.Root>
 </div>

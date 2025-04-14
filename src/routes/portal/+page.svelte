@@ -20,7 +20,6 @@
 	import UpdateForm from '$lib/updateForm.svelte';
 
 	let { data }: { data: PageData } = $props();
-
 	let tasks = $state(data.tasks);
 
 	$effect(() => {
@@ -47,7 +46,7 @@
 	}
 </script>
 
-<div class="max-w-screen flex h-fit flex-col items-center justify-center">
+<div class="w-full flex h-fit flex-col items-center justify-center">
 	{#if data.tasks}
 		<h1 class="mb-4 mt-8 text-4xl font-semibold">Your tasks</h1>
 		<Sheet.Root>
@@ -79,11 +78,11 @@
 							<div class="flex flex-col">
 								<div class="flex flex-row items-center gap-2">
 									{#if !task.completed}
-										<Card.Title>
+										<Card.Title class="text-xl">
 											{task.name}
 										</Card.Title>
 									{:else}
-										<Card.Title class="line-through opacity-50">
+										<Card.Title class="text-xl line-through opacity-50">
 											{task.name}
 										</Card.Title>
 									{/if}
@@ -177,7 +176,7 @@
 										>
 
 										{#if !task.failed}
-											<a href="/portal/flow/{task.id}" class="w-full" target="_blank">
+											<a href="/portal/flow/{task.id}" class="w-full">
 												<button
 													class="inline-flex w-full animate-shine items-center justify-center rounded-md border border-neutral-800 bg-[linear-gradient(110deg,#000103,45%,#1e2631,55%,#000103)] bg-[length:200%_100%] px-4 py-2 text-sm font-medium text-white transition-colors"
 												>
@@ -196,8 +195,4 @@
 			{/each}
 		</div>
 	{/if}
-
-	<!--
-  
-  -->
 </div>
