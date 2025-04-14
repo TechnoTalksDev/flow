@@ -6,7 +6,7 @@
 	import { ChevronRight } from '@lucide/svelte';
 </script>
 
-<div class="flex h-screen  w-screen flex-col items-center justify-center">
+<div class="flex h-screen w-screen flex-col items-center justify-center">
 
 
 <article
