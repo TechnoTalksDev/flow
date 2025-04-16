@@ -1,13 +1,14 @@
 <script lang="ts">
-	import CreateForm from '$lib/createForm.svelte';
+	import { invalidate } from '$app/navigation';
 	import type { PageData } from './$types';
+	import CreateForm from '$lib/createForm.svelte';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import * as Sheet from '$lib/components/ui/sheet/index.js';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import { Button, buttonVariants } from '$lib/components/ui/button';
 	import { Badge } from '$lib/components/ui/badge/index.js';
-	import { ChevronRight, SquarePen, Trash2 } from '@lucide/svelte';
+	import { ChevronRight, LoaderCircle, RefreshCw, SquarePen, Trash2 } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 	import {
 		updateTask,
@@ -18,17 +19,26 @@
 		isToday
 	} from '$lib/utils';
 	import UpdateForm from '$lib/updateForm.svelte';
-
+	import { fade } from 'svelte/transition';
 	let { data }: { data: PageData } = $props();
-	let tasks = $state(data.tasks);
+
+	let clientTasks:any[] = $state([]);
 
 	$effect(() => {
-		tasks = data.tasks;
-	});
+		data.tasks.then((tasks) => {
+			clientTasks = tasks.data ?? [];
+		});
+	})
 
-	$inspect(tasks);
+	//$inspect(clientTasks)
+
+	async function refresh() {
+		//console.log('Refreshing1...');
+		await invalidate('portal');
+	}
+
 	async function deleteTask(taskId: string) {
-		tasks = tasks.filter((task) => task.id !== taskId);
+		clientTasks = clientTasks.filter((task) => task.id !== taskId);
 		toast.success('Task deleted');
 		const response = await fetch(`/portal/api/delete/${taskId}`, {
 			method: 'POST',
@@ -46,23 +56,35 @@
 	}
 </script>
 
-<div class="w-full flex h-fit flex-col items-center justify-center">
-	{#if data.tasks}
-		<h1 class="mb-4 mt-8 text-4xl font-semibold">Your tasks</h1>
-		<Sheet.Root>
-			<Sheet.Trigger class="w-full">
-				<Button variant="secondary" class="mb-8"
-					>Create
-					<SquarePen />
-				</Button>
-			</Sheet.Trigger>
-			<Sheet.Content class="p-0">
-				<CreateForm {data} />
-			</Sheet.Content>
-		</Sheet.Root>
+<div class="flex h-fit w-full flex-col items-center justify-center">
+	<h1 class="mb-4 mt-8 text-4xl font-semibold">Your tasks</h1>
 
+	<Dialog.Root>
+		<Dialog.Trigger>
+			<Button variant="secondary" class="mb-4"
+				>Create
+				<SquarePen />
+			</Button>
+		</Dialog.Trigger>
+		<Dialog.Content class="p-0">
+			<CreateForm {data} />
+		</Dialog.Content>
+	</Dialog.Root>
+
+
+	<button onclick={refresh} class="mb-8"> 
+		<RefreshCw color="gray"/>
+	</button>
+
+
+	{#await data.tasks}
+		<div class="mb-8 flex flex-row items-center justify-center gap-2" transition:fade={{duration: 100}}>
+				<p class="text-xl font-semibold">Refreshing</p>
+				<LoaderCircle class="animate-spin" />
+		</div>
+	{:then wrapper}
 		<div class="flex flex-col gap-4">
-			{#each tasks as task, index}
+			{#each clientTasks as task, index}
 				<Card.Root
 					class="w-[350px] cursor-pointer shadow-none transition-shadow duration-300 hover:shadow-md hover:shadow-gray-400"
 				>
@@ -124,7 +146,7 @@
 									</Button>
 								</Dialog.Trigger>
 
-								<Dialog.Content class="">
+								<Dialog.Content class="overflow-y-auto">
 									<Dialog.Header>
 										<Dialog.Title class="flex w-full flex-row justify-between text-2xl">
 											{task.name}
@@ -194,5 +216,7 @@
 				</Card.Root>
 			{/each}
 		</div>
-	{/if}
+	{:catch error}
+		<p>error loading tasks: {error.message}</p>
+	{/await}
 </div>

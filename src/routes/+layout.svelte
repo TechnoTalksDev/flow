@@ -36,7 +36,7 @@
 		}
 	];
 
-	$inspect(url.pathname)
+	//$inspect(url.pathname)
 </script>
 
 <Toaster />

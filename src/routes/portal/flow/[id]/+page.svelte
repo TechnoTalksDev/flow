@@ -305,7 +305,7 @@
 							{#if remaining > 0}
 								<AlertDialog.Cancel
 									onclick={finishTask}
-									class="border-none bg-green-500 text-white transition-all duration-300"
+									class="border-green-500 bg-transparent text-white transition-all duration-300"
 									>Done</AlertDialog.Cancel
 								>
 								<Tooltip.Provider>
@@ -313,7 +313,7 @@
 										<Tooltip.Trigger>
 											<AlertDialog.Cancel
 												onclick={stopTimer}
-												class="border-none bg-red-500 text-white transition-all duration-300"
+												class="border-red-500 bg-transparent text-white transition-all duration-300"
 												>Stop</AlertDialog.Cancel
 											>
 										</Tooltip.Trigger>
@@ -330,7 +330,7 @@
 							{:else}
 								<AlertDialog.Cancel
 									onclick={finishTask}
-									class="border-none bg-green-500 text-white transition-all duration-300"
+									class="border-green-500 bg-transparent text-white transition-all duration-300"
 									>Done</AlertDialog.Cancel
 								>
 
@@ -338,7 +338,7 @@
 									<Tooltip.Root>
 										<Tooltip.Trigger
 											><AlertDialog.Action
-												class="border-none bg-yellow-500 text-white transition-all duration-300"
+												class="border-yellow-500 border-[1] bg-transparent text-white transition-all duration-300"
 												>Need more time?</AlertDialog.Action
 											></Tooltip.Trigger
 										>

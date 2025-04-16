@@ -29,7 +29,12 @@
 		},
 		onResult: ({ result, formEl, cancel }) => {
 			loading = false;
-			toast.success(`"${$formData.name}" task created`);
+			console.log(`Superform response: ${result.status}`)
+			if (result.status === 200) {
+				toast.success(`"${$formData.name}" task created`);
+			}else {
+				toast.error(`Something went wrong :(`);
+			}
 		}
 	});
 
@@ -45,7 +50,7 @@
 </script>
 
 <form method="POST" action="/portal?/create" use:enhance>
-	<Card.Root class="w-full">
+	<Card.Root class="w-full max-h-screen overflow-y-auto">
 		<Card.Header>
 			<Card.Title>Create a task</Card.Title>
 			<Card.Description

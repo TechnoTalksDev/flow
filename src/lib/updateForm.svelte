@@ -13,7 +13,7 @@
 	import { toast } from 'svelte-sonner';
 	import { enhance } from '$app/forms';
 	import { Button } from './components/ui/button';
-	import { invalidateAll } from '$app/navigation';
+	import { invalidate } from '$app/navigation';
 	import { delay } from './utils';
 
 	const df = new DateFormatter('en-US', {
@@ -85,7 +85,7 @@
 			toast.error('Failed to update task');
 			console.error('Failed to update task', response);
 		} else {
-			invalidateAll();
+			invalidate('portal');;
 
 			toast.success(`"${name}" task updated`);
 		}
@@ -95,7 +95,7 @@
 </script>
 
 <form>
-	<Card.Root class="w-full">
+	<Card.Root class="w-full max-h-screen overflow-y-auto border-none shadow-none">
 		<Card.Header>
 			<Card.Title class="text-wrap">Update <span class="font-normal">{name}</span></Card.Title>
 			<Card.Description
