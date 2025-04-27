@@ -13,12 +13,18 @@ export const load: PageServerLoad = async ({ params, locals: { supabase } }) => 
 		.eq('id', taskId)
 		.single();
 
+	const task = (async () => await supabase
+		.from('tasks')
+		.select('*')
+		.eq('id', taskId)
+		.single())()
+
 	if (fetchError) {
 		// Handle the error appropriately
-		throw error(500, 'Error fetching essay data');
+		throw error(500, 'Error fetching task data');
 	}
 
 	return {
-		task: data
+		task
 	};
 };
