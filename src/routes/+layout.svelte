@@ -15,45 +15,114 @@
 	let { session, supabase, url } = $derived(data);
 	let userXp = $state(0);
 	let isSessionValid = $state(true);
+	let refreshInProgress = $state(false);
+	let lastRefreshAttempt = $state(0);
+	
+	// Minimum time between refresh attempts (5 seconds)
+	const REFRESH_COOLDOWN = 5000;
+
+	// Function to handle session expiration
+	function handleSessionExpiration() {
+		if (isSessionValid) {
+			console.log('Session expired, redirecting to logout');
+			isSessionValid = false;
+			// Redirect to logout after a brief delay
+			setTimeout(() => goto('/auth/logout'), 100);
+		}
+	}
+
+	// Function to safely fetch user data
+	async function safelyFetchUserData() {
+		if (!session?.user || !isSessionValid) return null;
+		
+		try {
+			const { data: userData, error } = await supabase
+				.from('users')
+				.select('xp')
+				.eq('id', session.user.id)
+				.single();
+
+			if (error) {
+				if (error.code === '402' || error.code === '429' || error.message?.includes('JWT')) {
+					handleSessionExpiration();
+					return null;
+				}
+				console.error('Error fetching user data:', error);
+				return null;
+			}
+
+			return userData;
+		} catch (err) {
+			console.error('Error in fetchUserData:', err);
+			return null;
+		}
+	}
+
+	// Throttled token refresh function
+	async function throttledRefreshToken() {
+		const now = Date.now();
+		
+		// Don't allow refreshes if one is in progress or if we've tried recently
+		if (refreshInProgress || (now - lastRefreshAttempt < REFRESH_COOLDOWN)) {
+			return false;
+		}
+		
+		refreshInProgress = true;
+		lastRefreshAttempt = now;
+		
+		try {
+			const { data, error } = await supabase.auth.refreshSession();
+			
+			if (error) {
+				console.error('Error refreshing token:', error);
+				handleSessionExpiration();
+				return false;
+			}
+			
+			if (data.session) {
+				isSessionValid = true;
+				return true;
+			}
+			
+			return false;
+		} catch (err) {
+			console.error('Error in refreshToken:', err);
+			return false;
+		} finally {
+			refreshInProgress = false;
+		}
+	}
 
 	// Fetch user XP if logged in
 	$effect(() => {
 		async function fetchUserXp() {
-			if (session?.user && isSessionValid) {
-				try {
-					const { data: userData, error } = await supabase
-						.from('users')
-						.select('xp')
-						.eq('id', session.user.id)
-						.single();
-
-					if (error) {
-						// Handle session expiration or other errors
-						if (error.code === '402' || error.message?.includes('JWT')) {
-							isSessionValid = false;
-							console.log('Session appears to be expired, redirecting to login');
-							// Redirect to login after a brief delay
-							setTimeout(() => goto('/auth/logout'), 100);
-							return;
-						}
-						console.error('Error fetching user data:', error);
-						return;
-					}
-
-					if (userData) {
-						userXp = userData.xp || 0;
-					}
-				} catch (err) {
-					console.error('Error in fetchUserXp:', err);
-				}
+			if (!session?.user || !isSessionValid) return;
+			
+			const userData = await safelyFetchUserData();
+			if (userData) {
+				userXp = userData.xp || 0;
 			}
 		}
 
 		fetchUserXp();
 	});
 
-	// Listen for XP updates
+	// Listen for XP updates and auth state changes
 	onMount(() => {
+		// Attempt immediate token refresh if session is close to expiry
+		if (session) {
+			const expiresAt = session.expires_at ? session.expires_at * 1000 : 0;  // convert to ms
+			const now = Date.now();
+			const timeToExpiry = expiresAt - now;
+			
+			// If token expires in less than 5 minutes, refresh it
+			if (timeToExpiry < 300000 && timeToExpiry > 0) {
+				throttledRefreshToken();
+			} else if (timeToExpiry <= 0) {
+				handleSessionExpiration();
+			}
+		}
+		
 		// Event listener for auth state changes
 		const { data } = supabase.auth.onAuthStateChange((event, newSession) => {
 			if (event === 'SIGNED_OUT') {
@@ -61,38 +130,20 @@
 				userXp = 0;
 			} else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
 				isSessionValid = true;
-			}
-			
-			if (newSession?.expires_at !== session?.expires_at) {
-				invalidate('supabase:auth');
+				// Update session expiry info
+				if (newSession?.expires_at !== session?.expires_at) {
+					invalidate('supabase:auth');
+				}
 			}
 		});
 
 		// Event listener for XP updates
 		const handleXpUpdate = async (event: Event) => {
-			if (session?.user && isSessionValid) {
-				try {
-					const { data: userData, error } = await supabase
-						.from('users')
-						.select('xp')
-						.eq('id', session.user.id)
-						.single();
-
-					if (error) {
-						if (error.code === '402' || error.message?.includes('JWT')) {
-							isSessionValid = false;
-							return;
-						}
-						console.error('Error fetching updated XP:', error);
-						return;
-					}
-
-					if (userData) {
-						userXp = userData.xp || 0;
-					}
-				} catch (err) {
-					console.error('Error in XP update handler:', err);
-				}
+			if (!session?.user || !isSessionValid) return;
+			
+			const userData = await safelyFetchUserData();
+			if (userData) {
+				userXp = userData.xp || 0;
 			}
 		};
 
