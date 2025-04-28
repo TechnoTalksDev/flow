@@ -36,7 +36,7 @@
 	}
 
 	let { data }: { data: PageData } = $props();
-	
+
 	// Use clientTask as the main state
 	let clientTask = $state<Task | null>(null);
 
@@ -44,8 +44,7 @@
 		data.task.then((task) => {
 			clientTask = task.data ?? [];
 		});
-	})
-
+	});
 
 	// Track loading state
 	let isLoading = $state(true);
@@ -65,13 +64,13 @@
 			duration = clientTask.time;
 			durationMs = clientTask.time * 1000;
 			remaining = duration;
-			
+
 			if (clientTask.started) {
 				const startTime = new Date(clientTask.started);
 				const now = new Date();
 				const diff = now.getTime() - startTime.getTime();
 				const diffInSeconds = Math.floor(diff / 1000);
-				
+
 				if (clientTask.time > diffInSeconds) {
 					remaining = clientTask.time - diffInSeconds;
 				} else {
@@ -123,7 +122,7 @@
 
 	async function startTimer() {
 		if (!clientTask) return;
-		
+
 		if (!clientTask.started) {
 			const now = new Date();
 			clientTask.started = now.toISOString();
@@ -135,7 +134,7 @@
 			const now = new Date();
 			const diff = now.getTime() - startTime.getTime();
 			const diffInSeconds = Math.floor(diff / 1000);
-			
+
 			if (clientTask.time > diffInSeconds) {
 				remaining = clientTask.time - diffInSeconds;
 				console.log('Resumed timer');
@@ -167,7 +166,7 @@
 
 	async function finishTask() {
 		if (!clientTask) return;
-		
+
 		if (intervalId) clearTimeout(intervalId);
 		intervalId = null;
 		done = true;
@@ -189,7 +188,8 @@
 			});
 		} else {
 			toast.error('Task completed again :)', {
-				description: "Since this isn't your first time completing this task, you won't be receiving XP",
+				description:
+					"Since this isn't your first time completing this task, you won't be receiving XP",
 				duration: 5000,
 				action: {
 					label: 'Redirecting to portal',
@@ -209,13 +209,13 @@
 
 	async function stopTimer() {
 		if (!clientTask) return;
-		
+
 		if (intervalId) clearTimeout(intervalId);
 		intervalId = null;
 
 		// Calculate XP penalty (1/3 of the total possible XP)
 		const xpPenalty = Math.ceil(clientTask.time / 3) * -1;
-		
+
 		toast.error('Task failed :(', {
 			description: `You will lose ${Math.abs(xpPenalty)} XP for failing this task`,
 			duration: 5000,
@@ -244,7 +244,9 @@
 	});
 </script>
 
-<div class="flex h-screen w-screen flex-col items-center justify-center overflow-y-auto overflow-x-hidden">
+<div
+	class="flex h-screen w-screen flex-col items-center justify-center overflow-y-auto overflow-x-hidden"
+>
 	{#await data.task}
 		<div class="flex flex-col items-center justify-center gap-4" in:fade={{ duration: 300 }}>
 			<LoaderCircle class="size-12 animate-spin" />
@@ -259,7 +261,6 @@
 		{:else}
 			<Card.Root
 				class="w-[350px] cursor-pointer shadow-none transition-shadow duration-300 hover:shadow-md hover:shadow-gray-400"
-
 			>
 				<Card.Content class="sm:max-w-[425px]">
 					<Card.Title class="flex w-full flex-row justify-between text-2xl">
@@ -276,8 +277,9 @@
 						<p class="font-semibold text-red-500">Due today</p>
 					{/if}
 
-					<div class="w-fit flex-row text-xl my-4">
-						ETA: {getHoursAndMinutes(clientTask.time).hours} H {getHoursAndMinutes(clientTask.time).minutes} M
+					<div class="my-4 w-fit flex-row text-xl">
+						ETA: {getHoursAndMinutes(clientTask.time).hours} H {getHoursAndMinutes(clientTask.time)
+							.minutes} M
 					</div>
 
 					<div class="flex flex-row flex-wrap items-center gap-2">
@@ -331,7 +333,8 @@
 
 								{#if !(remaining > 0)}
 									<AlertDialog.Description class="text-gray-300">
-										Flow will <span class="text-red-500">auto fail</span> in <strong>1 minute</strong>
+										Flow will <span class="text-red-500">auto fail</span> in
+										<strong>1 minute</strong>
 									</AlertDialog.Description>
 								{/if}
 
@@ -372,7 +375,7 @@
 											<Tooltip.Root>
 												<Tooltip.Trigger
 													><AlertDialog.Action
-														class="border-yellow-500 border-[1] bg-transparent text-white transition-all duration-300"
+														class="border-[1] border-yellow-500 bg-transparent text-white transition-all duration-300"
 														>Need more time?</AlertDialog.Action
 													></Tooltip.Trigger
 												>
@@ -391,15 +394,22 @@
 							</AlertDialog.Content>
 						</AlertDialog.Root>
 					{:else}
-						<Button variant="destructive" class="w-full" disabled={true} href="/portal">Failed</Button>
+						<Button variant="destructive" class="w-full" disabled={true} href="/portal"
+							>Failed</Button
+						>
 					{/if}
 
-					<Button class="w-full" variant="secondary" name="back" href="/portal"><ChevronLeft /></Button>
+					<Button class="w-full" variant="secondary" name="back" href="/portal"
+						><ChevronLeft /></Button
+					>
 				</Card.Footer>
 			</Card.Root>
 		{/if}
 	{:catch error}
-		<div class="flex flex-col items-center justify-center gap-4 p-6 text-center" in:fade={{ duration: 300 }}>
+		<div
+			class="flex flex-col items-center justify-center gap-4 p-6 text-center"
+			in:fade={{ duration: 300 }}
+		>
 			<p class="text-lg text-red-500">Error loading task: {error.message}</p>
 			<Button variant="secondary" href="/portal">Back to tasks</Button>
 		</div>

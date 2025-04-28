@@ -85,7 +85,7 @@
 			toast.error('Failed to update task');
 			console.error('Failed to update task', response);
 		} else {
-			invalidate('portal');;
+			invalidate('portal');
 
 			toast.success(`"${name}" task updated`);
 		}
@@ -95,7 +95,7 @@
 </script>
 
 <form>
-	<Card.Root class="w-full max-h-screen overflow-y-auto border-none shadow-none">
+	<Card.Root class="max-h-screen w-full overflow-y-auto border-none shadow-none">
 		<Card.Header>
 			<Card.Title class="text-wrap">Update <span class="font-normal">{name}</span></Card.Title>
 			<Card.Description

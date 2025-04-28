@@ -23,13 +23,13 @@
 					.select('xp')
 					.eq('id', session.user.id)
 					.single();
-				
+
 				if (userData && !error) {
 					userXp = userData.xp || 0;
 				}
 			}
 		}
-		
+
 		fetchUserXp();
 	});
 
@@ -93,7 +93,9 @@
 		{/each}
 
 		{#if session?.user}
-			<div class="ml-2 flex items-center justify-center rounded-full bg-primary/10 px-3 py-1 text-sm font-medium">
+			<div
+				class="ml-2 flex items-center justify-center rounded-full bg-primary/10 px-3 py-1 text-sm font-medium"
+			>
 				XP: {userXp}
 			</div>
 		{/if}

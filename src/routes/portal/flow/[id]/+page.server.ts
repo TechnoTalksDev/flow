@@ -2,7 +2,7 @@ import { taskSchema } from '$lib/schemas';
 import { error } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
-import type { PageServerLoad } from '../../$types';
+import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ params, locals: { supabase } }) => {
 	const taskId = params.id;

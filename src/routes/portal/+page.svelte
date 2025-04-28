@@ -22,13 +22,13 @@
 	import { fade } from 'svelte/transition';
 	let { data }: { data: PageData } = $props();
 
-	let clientTasks:any[] = $state([]);
+	let clientTasks: any[] = $state([]);
 
 	$effect(() => {
 		data.tasks.then((tasks) => {
 			clientTasks = tasks.data ?? [];
 		});
-	})
+	});
 
 	//$inspect(clientTasks)
 
@@ -71,16 +71,17 @@
 		</Dialog.Content>
 	</Dialog.Root>
 
-
-	<button onclick={refresh} class="mb-8"> 
-		<RefreshCw color="gray"/>
+	<button onclick={refresh} class="mb-8">
+		<RefreshCw color="gray" />
 	</button>
 
-
 	{#await data.tasks}
-		<div class="mb-8 flex flex-row items-center justify-center gap-2" transition:fade={{duration: 100}}>
-				<p class="text-xl font-semibold">Refreshing</p>
-				<LoaderCircle class="animate-spin" />
+		<div
+			class="mb-8 flex flex-row items-center justify-center gap-2"
+			transition:fade={{ duration: 100 }}
+		>
+			<p class="text-xl font-semibold">Refreshing</p>
+			<LoaderCircle class="animate-spin" />
 		</div>
 	{:then wrapper}
 		<div class="flex flex-col gap-4">
