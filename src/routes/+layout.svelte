@@ -2,6 +2,7 @@
 	import { invalidate } from '$app/navigation';
 	import Header from '$lib/header.svelte';
 	import { onMount } from 'svelte';
+	import { goto } from '$app/navigation';
 
 	import '../app.css';
 	import { Toaster } from '$lib/components/ui/sonner';
@@ -13,19 +14,37 @@
 	let { data, children } = $props();
 	let { session, supabase, url } = $derived(data);
 	let userXp = $state(0);
+	let isSessionValid = $state(true);
 
 	// Fetch user XP if logged in
 	$effect(() => {
 		async function fetchUserXp() {
-			if (session?.user) {
-				const { data: userData, error } = await supabase
-					.from('users')
-					.select('xp')
-					.eq('id', session.user.id)
-					.single();
+			if (session?.user && isSessionValid) {
+				try {
+					const { data: userData, error } = await supabase
+						.from('users')
+						.select('xp')
+						.eq('id', session.user.id)
+						.single();
 
-				if (userData && !error) {
-					userXp = userData.xp || 0;
+					if (error) {
+						// Handle session expiration or other errors
+						if (error.code === '402' || error.message?.includes('JWT')) {
+							isSessionValid = false;
+							console.log('Session appears to be expired, redirecting to login');
+							// Redirect to login after a brief delay
+							setTimeout(() => goto('/auth/logout'), 100);
+							return;
+						}
+						console.error('Error fetching user data:', error);
+						return;
+					}
+
+					if (userData) {
+						userXp = userData.xp || 0;
+					}
+				} catch (err) {
+					console.error('Error in fetchUserXp:', err);
 				}
 			}
 		}
@@ -36,7 +55,14 @@
 	// Listen for XP updates
 	onMount(() => {
 		// Event listener for auth state changes
-		const { data } = supabase.auth.onAuthStateChange((_, newSession) => {
+		const { data } = supabase.auth.onAuthStateChange((event, newSession) => {
+			if (event === 'SIGNED_OUT') {
+				isSessionValid = false;
+				userXp = 0;
+			} else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+				isSessionValid = true;
+			}
+			
 			if (newSession?.expires_at !== session?.expires_at) {
 				invalidate('supabase:auth');
 			}
@@ -44,15 +70,28 @@
 
 		// Event listener for XP updates
 		const handleXpUpdate = async (event: Event) => {
-			if (session?.user) {
-				const { data: userData, error } = await supabase
-					.from('users')
-					.select('xp')
-					.eq('id', session.user.id)
-					.single();
+			if (session?.user && isSessionValid) {
+				try {
+					const { data: userData, error } = await supabase
+						.from('users')
+						.select('xp')
+						.eq('id', session.user.id)
+						.single();
 
-				if (userData && !error) {
-					userXp = userData.xp || 0;
+					if (error) {
+						if (error.code === '402' || error.message?.includes('JWT')) {
+							isSessionValid = false;
+							return;
+						}
+						console.error('Error fetching updated XP:', error);
+						return;
+					}
+
+					if (userData) {
+						userXp = userData.xp || 0;
+					}
+				} catch (err) {
+					console.error('Error in XP update handler:', err);
 				}
 			}
 		};
