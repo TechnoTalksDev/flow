@@ -1,18 +1,18 @@
 import { error } from '@sveltejs/kit';
-import type { PageServerLoad } from './$types';
+import type { PageServerLoad } from '../../profile/[id]/$types';
 import { delay } from '$lib/utils';
 
 export const load: PageServerLoad = async ({ locals: { supabase, safeGetSession } }) => {
-  const session = await safeGetSession();
-  
-  if (!session?.user) {
-    throw error(401, 'Authentication required');
-  }
-  
-  const userId = session.user.id;
-  
-  // Use promise to enable streaming
-  const userData = (async () => {
+  // Create a promise for session check that other promises can depend on
+  const sessionPromise = safeGetSession().then(session => {
+    if (!session?.user) {
+      throw error(401, 'Authentication required');
+    }
+    return session.user.id;
+  });
+
+  // Use promise for user data without awaiting
+  const userData = sessionPromise.then(async (userId) => {
     const { data, error: fetchError } = await supabase
       .from('users')
       .select('id, created_at, username, name, avatar, email, xp')
@@ -25,10 +25,10 @@ export const load: PageServerLoad = async ({ locals: { supabase, safeGetSession 
     }
     
     return data;
-  })();
+  });
   
-  // Fetch task statistics in parallel using promises for streaming
-  const taskStats = (async () => {
+  // Fetch task statistics in parallel using promises
+  const taskStats = sessionPromise.then(async () => {
     try {
       // Get total tasks count
       const { count: totalTasks, error: totalError } = await supabase
@@ -63,7 +63,11 @@ export const load: PageServerLoad = async ({ locals: { supabase, safeGetSession 
       console.error('Error fetching task stats:', err);
       throw error(500, 'Error fetching task statistics');
     }
-  })();
+  });
+  
+  // Add a catch handler to the promises to prevent unhandled rejections on the server
+  userData.catch(() => {});
+  taskStats.catch(() => {});
   
   return {
     userData,

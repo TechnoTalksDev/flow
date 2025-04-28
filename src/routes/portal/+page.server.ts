@@ -7,7 +7,7 @@ import { delay } from '$lib/utils.js';
 
 export const load: PageServerLoad = async ({ params, locals: { supabase }, depends }) => {
   console.log("Processing load...")
-  const tasks = (async () => await supabase
+  const tasks = (async () => supabase
   .from('tasks')
   .select('*')
   .order('completed', { ascending: true }))()
