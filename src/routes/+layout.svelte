@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { invalidate } from '$app/navigation';
 	import Header from '$lib/header.svelte';
 	import { onMount } from 'svelte';
@@ -33,13 +33,38 @@
 		fetchUserXp();
 	});
 
+	// Listen for XP updates
 	onMount(() => {
+		// Event listener for auth state changes
 		const { data } = supabase.auth.onAuthStateChange((_, newSession) => {
 			if (newSession?.expires_at !== session?.expires_at) {
 				invalidate('supabase:auth');
 			}
 		});
-		return () => data.subscription.unsubscribe();
+
+		// Event listener for XP updates
+		const handleXpUpdate = async (event: Event) => {
+			if (session?.user) {
+				const { data: userData, error } = await supabase
+					.from('users')
+					.select('xp')
+					.eq('id', session.user.id)
+					.single();
+
+				if (userData && !error) {
+					userXp = userData.xp || 0;
+				}
+			}
+		};
+
+		// Add event listener
+		window.addEventListener('xp-updated', handleXpUpdate);
+
+		// Return cleanup function
+		return () => {
+			data.subscription.unsubscribe();
+			window.removeEventListener('xp-updated', handleXpUpdate);
+		};
 	});
 
 	let navs = [

@@ -98,5 +98,9 @@ export async function addXp(amount: number) {
 		method: 'POST'
 	});
 
+	// Create and dispatch custom event for XP update
+	const event = new CustomEvent('xp-updated', { detail: { amount } });
+	window.dispatchEvent(event);
+
 	console.log(response);
 }

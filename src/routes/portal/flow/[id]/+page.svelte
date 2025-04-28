@@ -115,20 +115,20 @@
 		const elapsed = now - (startedMs ?? 0);
 		const msLeft = Math.max(0, durationMs - elapsed);
 		remaining = Math.ceil(msLeft / 1000);
-		
+
 		// If timer has ended, ensure we handle it properly
 		if (msLeft <= 0) {
 			remaining = 0;
 			stopTimer();
 			return;
 		}
-		
+
 		// Calculate drift to maintain accuracy over time
 		const drift = elapsed % 1000;
-		
+
 		// Clear any existing interval before setting a new one
 		if (intervalId) clearTimeout(intervalId);
-		
+
 		// Schedule next update with drift compensation
 		intervalId = setTimeout(scheduleNext, 1000 - drift);
 	}
@@ -228,7 +228,7 @@
 			clearTimeout(intervalId);
 			intervalId = null;
 		}
-		
+
 		// Explicitly mark the timer as stopped
 		started = false;
 		done = true;

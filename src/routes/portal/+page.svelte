@@ -16,17 +16,23 @@
 		formatDate,
 		isBeforeToday,
 		daysRemaining,
-		isToday
+		isToday,
+		addXp
 	} from '$lib/utils';
 	import UpdateForm from '$lib/updateForm.svelte';
 	import { fade } from 'svelte/transition';
 	let { data }: { data: PageData } = $props();
 
 	let clientTasks: any[] = $state([]);
+	let previousCompletionState = new Map();
 
 	$effect(() => {
 		data.tasks.then((tasks) => {
 			clientTasks = tasks.data ?? [];
+			// Store the initial completion state of each task
+			clientTasks.forEach((task) => {
+				previousCompletionState.set(task.id, task.completed);
+			});
 		});
 	});
 
@@ -53,6 +59,36 @@
 			toast.error('Failed to delete task');
 			console.error('Failed to delete task', response);
 		}
+	}
+
+	async function handleCheckboxChange(task: any) {
+		// Get the previous state
+		const wasCompleted = previousCompletionState.get(task.id);
+
+		// Compare with current state to determine if it's a check or uncheck action
+		if (task.completed !== wasCompleted) {
+			if (task.completed) {
+				// Task was just checked
+				await addXp(100);
+				toast.success('+100 XP', {
+					position: 'bottom-right',
+					style: 'color: #22c55e;'
+				});
+			} else {
+				// Task was just unchecked
+				await addXp(-100);
+				toast.error('-100 XP', {
+					position: 'bottom-right',
+					style: 'color: #ef4444;'
+				});
+			}
+		}
+
+		// Update the previous state
+		previousCompletionState.set(task.id, task.completed);
+
+		// Update the task on the server
+		await updateTask(task.id, task);
 	}
 </script>
 
@@ -95,7 +131,7 @@
 								class="mr-3 scale-125"
 								bind:checked={task.completed}
 								onCheckedChange={() => {
-									updateTask(task.id, task);
+									handleCheckboxChange(task);
 								}}
 							/>
 							<div class="flex flex-col">
