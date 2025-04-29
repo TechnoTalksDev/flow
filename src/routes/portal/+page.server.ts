@@ -7,13 +7,29 @@ import { delay } from '$lib/utils.js';
 
 export const load: PageServerLoad = async ({ params, locals: { supabase }, depends }) => {
 	console.log('Processing load...');
+	
+	// Get incomplete tasks sorted by soonest due date
 	const tasks = (async () =>
-		supabase.from('tasks').select('*').order('completed', { ascending: true }))();
+		supabase
+			.from('tasks')
+			.select('*')
+			.eq('completed', false)
+			.order('dueDate', { ascending: true }))();
+	
+	// Get completed tasks sorted by most recent due date at the top
+	// Load this after the incomplete tasks
+	const completed = tasks.then(() => 
+		supabase
+			.from('tasks')
+			.select('*')
+			.eq('completed', true)
+			.order('dueDate', { ascending: false }));
 
 	depends('portal');
 
 	return {
 		tasks,
+		completed,
 		form: await superValidate(zod(taskSchema))
 	};
 };
