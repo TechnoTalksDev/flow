@@ -3,13 +3,16 @@
 	import Header from '$lib/header.svelte';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
+	import { onNavigate } from '$app/navigation';
+	import { navigating } from '$app/state';
+	import { fade } from 'svelte/transition';
 
 	import '../app.css';
 	import { Toaster } from '$lib/components/ui/sonner';
 	import Dock from '$lib/components/Dock.svelte';
 	import DockIcon from '$lib/components/DockIcon.svelte';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
-	import { Home, LogOut, Pencil, User, UserRound } from '@lucide/svelte';
+	import { Home, LogOut, Pencil, User, UserRound, LoaderCircle } from '@lucide/svelte';
 
 	let { data, children } = $props();
 	let { session, supabase, url } = $derived(data);
@@ -166,11 +169,26 @@
 		},
 		{ label: 'Sign out', icon: LogOut, link: '/auth/logout' }
 	];
+	
 
-	//$inspect(url.pathname)
+	$inspect(navigating.complete)
 </script>
 
 <Toaster />
+
+<!-- Page transition loading overlay -->
+{#if navigating.complete}
+	<div 
+		class="fixed inset-0 z-[100] flex items-center justify-center bg-background/80 backdrop-blur-sm transition-all"
+		in:fade={{ duration: 100 }}
+		out:fade={{ duration: 300 }}
+	>
+		<div class="flex flex-col items-center gap-4">
+			<LoaderCircle class="size-12 animate-spin text-primary" />
+			<!-- <p class="text-lg font-medium">Loading...</p> -->
+		</div>
+	</div>
+{/if}
 
 {@render children()}
 
