@@ -57,6 +57,8 @@
 	let started = $state(false);
 	let intervalId: ReturnType<typeof setTimeout> | null = null;
 	let done = $state(false);
+	let graceTimerActive = $state(false);
+	let graceTimerId: ReturnType<typeof setTimeout> | null = null;
 
 	// Initialize timer when clientTask is loaded
 	$effect(() => {
@@ -100,12 +102,18 @@
 	$effect(() => {
 		if (!(remaining > 0)) {
 			// Only start the auto-fail countdown if we're legitimately at 0
-			if (started && !done) {
-				delay(60000).then(() => {
+			if (started && !done && !graceTimerActive) {
+				// Set the grace timer active flag
+				graceTimerActive = true;
+				console.log("Starting 1-minute grace period");
+				
+				// Start grace period timer
+				graceTimerId = setTimeout(() => {
 					if (!done) {
+						console.log("Grace period expired, failing task");
 						stopTimer();
 					}
-				});
+				}, 60000);
 			}
 		}
 	});
@@ -116,10 +124,10 @@
 		const msLeft = Math.max(0, durationMs - elapsed);
 		remaining = Math.ceil(msLeft / 1000);
 
-		// If timer has ended, ensure we handle it properly
+		// If timer has ended, ensure we just keep it at zero
 		if (msLeft <= 0) {
 			remaining = 0;
-			stopTimer();
+			// Don't call stopTimer() immediately, let the grace period handle it
 			return;
 		}
 
@@ -180,8 +188,13 @@
 	async function finishTask() {
 		if (!clientTask) return;
 
+		// Clear both timers
 		if (intervalId) clearTimeout(intervalId);
 		intervalId = null;
+		
+		if (graceTimerId) clearTimeout(graceTimerId);
+		graceTimerId = null;
+		
 		done = true;
 
 		if (clientTask.first) {
@@ -228,10 +241,17 @@
 			clearTimeout(intervalId);
 			intervalId = null;
 		}
+		
+		// Also clear the grace period timer if it's active
+		if (graceTimerId) {
+			clearTimeout(graceTimerId);
+			graceTimerId = null;
+		}
 
 		// Explicitly mark the timer as stopped
 		started = false;
 		done = true;
+		graceTimerActive = false;
 
 		// Calculate XP penalty (1/3 of the total possible XP)
 		const xpPenalty = Math.ceil(clientTask.time / 3) * -1;
@@ -261,6 +281,7 @@
 
 	onDestroy(() => {
 		if (intervalId) clearTimeout(intervalId);
+		if (graceTimerId) clearTimeout(graceTimerId);
 	});
 </script>
 
