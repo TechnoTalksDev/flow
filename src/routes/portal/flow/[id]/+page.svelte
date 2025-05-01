@@ -359,15 +359,15 @@
 								{/if}
 							</AlertDialog.Trigger>
 							<AlertDialog.Content
-								class="flex flex-col items-center justify-center border-none bg-white/10 text-center backdrop-blur-md"
+								class="flex flex-col items-center justify-center border-gray-500 bg-white/10 text-center backdrop-blur-lg rounded-md w-[30rem] max-w-[98vw]"
 							>
-								<AlertDialog.Title class="text-5xl text-white">Focus</AlertDialog.Title>
+								<AlertDialog.Title class="text-5xl text-white font-semibold">Focus</AlertDialog.Title>
 								<AlertDialog.Description class="text-gray-300">
 									Locked in for <strong>{formatTime(duration - remaining)}</strong>
 								</AlertDialog.Description>
 
 								<h1
-									class="inline-flex animate-shine bg-[linear-gradient(110deg,#939393,45%,#1e2631,55%,#939393)] bg-[length:200%_100%] bg-clip-text text-8xl font-medium text-transparent"
+									class="inline-flex animate-shine bg-[linear-gradient(110deg,#939393,45%,#1e2631,55%,#939393)] bg-[length:200%_100%] bg-clip-text text-8xl font-medium text-transparent mb-6"
 								>
 									{formatTime(remaining)}
 								</h1>
@@ -379,7 +379,7 @@
 									</AlertDialog.Description>
 								{/if}
 
-								<AlertDialog.Footer>
+								<AlertDialog.Footer class="flex flex-row gap-4">
 									{#if remaining > 0}
 										<AlertDialog.Cancel
 											onclick={finishTask}

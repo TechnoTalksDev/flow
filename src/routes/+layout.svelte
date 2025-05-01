@@ -21,8 +21,8 @@
 	let refreshInProgress = $state(false);
 	let lastRefreshAttempt = $state(0);
 	
-	// Minimum time between refresh attempts (5 seconds)
-	const REFRESH_COOLDOWN = 5000;
+	// Increase refresh cooldown to reduce API calls (15 seconds)
+	const REFRESH_COOLDOWN = 15000;
 
 	// Function to handle session expiration
 	function handleSessionExpiration() {
@@ -61,7 +61,7 @@
 		}
 	}
 
-	// Throttled token refresh function
+	// Throttled token refresh function with better error handling
 	async function throttledRefreshToken() {
 		const now = Date.now();
 		
@@ -74,16 +74,34 @@
 		lastRefreshAttempt = now;
 		
 		try {
+			// Use refreshSession only if we have a session
+			if (!session) {
+				refreshInProgress = false;
+				return false;
+			}
+			
 			const { data, error } = await supabase.auth.refreshSession();
 			
 			if (error) {
-				console.error('Error refreshing token:', error);
-				handleSessionExpiration();
+				// Handle specific error codes
+				if (error.status === 400 && error.code === 'refresh_token_not_found') {
+					// Token is completely invalid, better to log user out than keep trying
+					console.warn('Refresh token not found, logging out');
+					handleSessionExpiration();
+				} else if (error.status === 429) {
+					// Rate limited - back off significantly
+					console.warn('Auth rate limited, backing off');
+					lastRefreshAttempt = now + 60000; // Add a minute to backoff
+				} else {
+					console.error('Error refreshing token:', error);
+				}
 				return false;
 			}
 			
 			if (data.session) {
 				isSessionValid = true;
+				// Update the local session data to avoid unnecessary refreshes
+				invalidate('supabase:auth');
 				return true;
 			}
 			
@@ -112,16 +130,17 @@
 
 	// Listen for XP updates and auth state changes
 	onMount(() => {
-		// Attempt immediate token refresh if session is close to expiry
+		// Attempt token refresh only if we have a session and it's approaching expiry
 		if (session) {
 			const expiresAt = session.expires_at ? session.expires_at * 1000 : 0;  // convert to ms
 			const now = Date.now();
 			const timeToExpiry = expiresAt - now;
 			
-			// If token expires in less than 5 minutes, refresh it
+			 // Only refresh if token expires in less than 5 minutes but is still valid
 			if (timeToExpiry < 300000 && timeToExpiry > 0) {
 				throttledRefreshToken();
 			} else if (timeToExpiry <= 0) {
+				// If token is already expired, don't try to refresh, just log out
 				handleSessionExpiration();
 			}
 		}
@@ -155,7 +174,7 @@
 
 		// Return cleanup function
 		return () => {
-			data.subscription.unsubscribe();
+			data.subscription?.unsubscribe?.();
 			window.removeEventListener('xp-updated', handleXpUpdate);
 		};
 	});

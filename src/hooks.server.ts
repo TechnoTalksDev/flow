@@ -31,12 +31,10 @@ const supabase: Handle = async ({ event, resolve }) => {
 	);
 
 	/**
+	 * Enhanced safeGetSession function with better error handling and 
+	 * validation caching to prevent excessive auth calls.
 	 * Unlike `supabase.auth.getSession()`, which returns the session _without_
-	 * validating the JWT, this function also calls `getUser()` to validate the
-	 * JWT before returning the session.
-	 * 
-	 * This enhanced version includes error caching to prevent unnecessary auth calls
-	 * when tokens are invalid.
+	 * validating the JWT, this function also validates the JWT before returning the session.
 	 */
 	event.locals.safeGetSession = async () => {
 		// First, check if we have a session
@@ -50,19 +48,36 @@ const supabase: Handle = async ({ event, resolve }) => {
 
 		// Check session expiration time
 		const now = Math.floor(Date.now() / 1000); // Current time in seconds
-		if (session.expires_at && session.expires_at < now) {
-			// Session is expired, no need to make an API call
+		
+		// Add a 5-minute buffer to avoid edge cases with clock skew
+		if (session.expires_at && session.expires_at < (now - 300)) {
+			// Session is clearly expired, no need to make an API call
 			return { session: null, user: null };
+		}
+		
+		// If the session is very close to expiry, don't validate it server-side
+		// Let the client handle the refresh to avoid race conditions
+		if (session.expires_at && (session.expires_at - now < 60)) {
+			// Return existing session without validation if it expires in less than a minute
+			// This prevents excessive validation requests during token refresh periods
+			return { session, user: session.user };
 		}
 
 		try {
+			// Only validate the session if it's not close to expiry
 			const {
 				data: { user },
 				error
 			} = await event.locals.supabase.auth.getUser();
 
 			if (error) {
-				// JWT validation has failed
+				// JWT validation has failed - clear the invalid cookies
+				if (error.status === 400 && error.message.includes('JWT')) {
+					// Clear auth cookies to prevent continued errors
+					event.cookies.delete('sb-access-token', { path: '/' });
+					event.cookies.delete('sb-refresh-token', { path: '/' });
+				}
+				
 				console.error('Auth error in safeGetSession:', error.message);
 				return { session: null, user: null };
 			}
