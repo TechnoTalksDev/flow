@@ -105,12 +105,12 @@
 			if (started && !done && !graceTimerActive) {
 				// Set the grace timer active flag
 				graceTimerActive = true;
-				console.log("Starting 1-minute grace period");
-				
+				console.log('Starting 1-minute grace period');
+
 				// Start grace period timer
 				graceTimerId = setTimeout(() => {
 					if (!done) {
-						console.log("Grace period expired, failing task");
+						console.log('Grace period expired, failing task');
 						stopTimer();
 					}
 				}, 60000);
@@ -191,10 +191,10 @@
 		// Clear both timers
 		if (intervalId) clearTimeout(intervalId);
 		intervalId = null;
-		
+
 		if (graceTimerId) clearTimeout(graceTimerId);
 		graceTimerId = null;
-		
+
 		done = true;
 
 		if (clientTask.first) {
@@ -241,7 +241,7 @@
 			clearTimeout(intervalId);
 			intervalId = null;
 		}
-		
+
 		// Also clear the grace period timer if it's active
 		if (graceTimerId) {
 			clearTimeout(graceTimerId);
@@ -359,15 +359,17 @@
 								{/if}
 							</AlertDialog.Trigger>
 							<AlertDialog.Content
-								class="flex flex-col items-center justify-center border-gray-500 bg-white/10 text-center backdrop-blur-lg rounded-md w-[30rem] max-w-[98vw]"
+								class="flex w-[30rem] max-w-[98vw] flex-col items-center justify-center rounded-md border-gray-500 bg-white/10 text-center backdrop-blur-lg"
 							>
-								<AlertDialog.Title class="text-5xl text-white font-semibold">Focus</AlertDialog.Title>
+								<AlertDialog.Title class="text-5xl font-semibold text-white"
+									>Focus</AlertDialog.Title
+								>
 								<AlertDialog.Description class="text-gray-300">
 									Locked in for <strong>{formatTime(duration - remaining)}</strong>
 								</AlertDialog.Description>
 
 								<h1
-									class="inline-flex animate-shine bg-[linear-gradient(110deg,#939393,45%,#1e2631,55%,#939393)] bg-[length:200%_100%] bg-clip-text text-8xl font-medium text-transparent mb-6"
+									class="mb-6 inline-flex animate-shine bg-[linear-gradient(110deg,#939393,45%,#1e2631,55%,#939393)] bg-[length:200%_100%] bg-clip-text text-8xl font-medium text-transparent"
 								>
 									{formatTime(remaining)}
 								</h1>

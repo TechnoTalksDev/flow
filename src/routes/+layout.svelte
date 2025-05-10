@@ -25,16 +25,16 @@
 
 	// Random loading messages
 	const loadingMessages = [
-		"Generating quantum tunnels...",
-		"Reticulating splines...",
-		"Convincing AI not to take over the world...",
-		"Brewing digital coffee for the servers...",
-		"Herding pixel cats...",
-		"Downloading more RAM...",
-		"Teaching robots to dance...",
+		'Generating quantum tunnels...',
+		'Reticulating splines...',
+		'Convincing AI not to take over the world...',
+		'Brewing digital coffee for the servers...',
+		'Herding pixel cats...',
+		'Downloading more RAM...',
+		'Teaching robots to dance...',
 		"Untangling the internet's cables...",
-		"Polishing the pixels...",
-		"Summoning digital wizards..."
+		'Polishing the pixels...',
+		'Summoning digital wizards...'
 	];
 
 	// Function to get a random loading message

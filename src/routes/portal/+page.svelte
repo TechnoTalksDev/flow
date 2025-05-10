@@ -10,7 +10,7 @@
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { ChevronRight, LoaderCircle, RefreshCw, SquarePen, Trash2 } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
-	import * as Accordion from "$lib/components/ui/accordion/index.js";
+	import * as Accordion from '$lib/components/ui/accordion/index.js';
 	import {
 		updateTask,
 		getHoursAndMinutes,
@@ -34,9 +34,9 @@
 			// Store the initial completion state of each task
 			clientTasks.forEach((task) => {
 				previousCompletionState.set(task.id, task.completed);
-			 });
+			});
 		});
-		
+
 		data.completed.then((completed) => {
 			completedTasks = completed.data ?? [];
 			// Store the initial completion state of completed tasks
@@ -81,10 +81,10 @@
 			if (task.completed) {
 				// Task was just checked - move from active to completed
 				clientTasks = clientTasks.filter((t) => t.id !== task.id);
-				completedTasks = [...completedTasks, task].sort((a, b) => 
-					new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime()
+				completedTasks = [...completedTasks, task].sort(
+					(a, b) => new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime()
 				);
-				
+
 				// XP notification
 				await addXp(100);
 				toast.success('+100 XP', {
@@ -94,10 +94,10 @@
 			} else {
 				// Task was just unchecked - move from completed to active
 				completedTasks = completedTasks.filter((t) => t.id !== task.id);
-				clientTasks = [...clientTasks, task].sort((a, b) => 
-					new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()
+				clientTasks = [...clientTasks, task].sort(
+					(a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()
 				);
-				
+
 				// XP notification
 				await addXp(-100);
 				toast.error('-100 XP', {
@@ -280,7 +280,6 @@
 				<Accordion.Item value="item-1">
 					<Accordion.Trigger>Completed</Accordion.Trigger>
 					<Accordion.Content>
-						
 						<div class="flex flex-col gap-4">
 							{#each completedTasks as task, index}
 								<Card.Root
@@ -306,12 +305,12 @@
 															{task.name}
 														</Card.Title>
 													{/if}
-				
+
 													{#if task.failed}
 														<Badge variant="destructive" class="w-fit">Failed</Badge>
 													{/if}
 												</div>
-				
+
 												{#if isBeforeToday(task.dueDate)}
 													<p class="text-red-500">{formatDate(task.dueDate)}</p>
 												{:else if daysRemaining(task.dueDate) > 0}
@@ -321,7 +320,7 @@
 												{:else}
 													<p class="font-semibold text-red-500">Due today</p>
 												{/if}
-				
+
 												<div class="mt-1 flex flex-row flex-wrap items-center gap-2">
 													{#each task.tags as tag}
 														<div
@@ -335,7 +334,7 @@
 												</div>
 											</div>
 										</div>
-				
+
 										<div class="w-fit">
 											<Dialog.Root>
 												<Dialog.Trigger class="">
@@ -343,7 +342,7 @@
 														<ChevronRight />
 													</Button>
 												</Dialog.Trigger>
-				
+
 												<Dialog.Content class="overflow-y-auto">
 													<Dialog.Header>
 														<Dialog.Title class="flex w-full flex-row justify-between text-2xl">
@@ -368,12 +367,13 @@
 															<p class="font-semibold text-red-500">Due today</p>
 														{/if}
 													</Dialog.Header>
-				
+
 													<div class="w-fit flex-row text-xl">
-														ETA: {getHoursAndMinutes(task.time).hours} H {getHoursAndMinutes(task.time)
-															.minutes} M
+														ETA: {getHoursAndMinutes(task.time).hours} H {getHoursAndMinutes(
+															task.time
+														).minutes} M
 													</div>
-				
+
 													<div class="flex flex-row flex-wrap items-center gap-2">
 														{#each task.tags as tag}
 															<div
@@ -385,7 +385,7 @@
 															</div>
 														{/each}
 													</div>
-				
+
 													<Dialog.Footer>
 														<Button
 															variant="destructive"
@@ -394,7 +394,7 @@
 																deleteTask(task.id);
 															}}><Trash2 /></Button
 														>
-				
+
 														{#if !task.failed}
 															<a href="/portal/flow/{task.id}" class="w-full">
 																<button
@@ -404,7 +404,9 @@
 																</button>
 															</a>
 														{:else}
-															<Button variant="destructive" class="w-full" disabled={true}>Failed</Button>
+															<Button variant="destructive" class="w-full" disabled={true}
+																>Failed</Button
+															>
 														{/if}
 													</Dialog.Footer>
 												</Dialog.Content>
@@ -413,7 +415,7 @@
 									</Card.Content>
 								</Card.Root>
 							{/each}
-					</div>
+						</div>
 					</Accordion.Content>
 				</Accordion.Item>
 			</Accordion.Root>
