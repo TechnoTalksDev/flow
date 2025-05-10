@@ -12,7 +12,7 @@
 	import Dock from '$lib/components/Dock.svelte';
 	import DockIcon from '$lib/components/DockIcon.svelte';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
-	import { Home, LogOut, Pencil, User, UserRound, LoaderCircle } from '@lucide/svelte';
+	import { Home, LogOut, Pencil, User, UserRound, LoaderCircle, Menu, X } from '@lucide/svelte';
 
 	let { data, children } = $props();
 	let { session, supabase, url } = $derived(data);
@@ -20,6 +20,7 @@
 	let isSessionValid = $state(true);
 	let refreshInProgress = $state(false);
 	let lastRefreshAttempt = $state(0);
+	let mobileMenuOpen = $state(false);
 	
 	// Increase refresh cooldown to reduce API calls (15 seconds)
 	const REFRESH_COOLDOWN = 15000;
@@ -211,45 +212,97 @@
 
 {@render children()}
 
-<div class="fixed inset-x-0 bottom-4 z-50 flex justify-center">
-	<Dock
-		direction="middle"
-		let:mouseX
-		let:distance
-		let:magnification
-		class="rounded-full bg-white/80 px-4 py-2 shadow-md backdrop-blur-sm"
-	>
-		{#each navs as item}
-			{#if url.pathname === item.link}
-				<a href={item.link}>
-					<DockIcon
-						{mouseX}
-						{magnification}
-						{distance}
-						class="rounded-full bg-gray-100 p-2 hover:bg-gray-200"
-					>
-						{@const Icon = item.icon}
 
-						<Icon size={20} strokeWidth={1.2} />
-					</DockIcon>
-				</a>
-			{:else}
-				<a href={item.link}>
-					<DockIcon {mouseX} {magnification} {distance} class="rounded-full p-2 hover:bg-gray-200">
-						{@const Icon = item.icon}
+{#if session}
+	<div class="fixed inset-x-0 bottom-4 z-50 flex justify-center">
+		<Dock
+			direction="middle"
+			let:mouseX
+			let:distance
+			let:magnification
+			class="rounded-full bg-white/80 px-4 py-2 shadow-md backdrop-blur-sm"
+		>
+			{#each navs as item}
+				{#if url.pathname === item.link}
+					<a href={item.link}>
+						<DockIcon
+							{mouseX}
+							{magnification}
+							{distance}
+							class="rounded-full bg-gray-100 p-2 hover:bg-gray-200"
+						>
+							{@const Icon = item.icon}
 
-						<Icon size={20} strokeWidth={1.2} />
-					</DockIcon>
-				</a>
+							<Icon size={20} strokeWidth={1.2} />
+						</DockIcon>
+					</a>
+				{:else}
+					<a href={item.link}>
+						<DockIcon {mouseX} {magnification} {distance} class="rounded-full p-2 hover:bg-gray-200">
+							{@const Icon = item.icon}
+
+							<Icon size={20} strokeWidth={1.2} />
+						</DockIcon>
+					</a>
+				{/if}
+			{/each}
+
+			{#if session?.user}
+				<div
+					class="ml-2 flex items-center justify-center rounded-full bg-primary/10 px-3 py-1 text-sm font-medium"
+				>
+					XP: {userXp}
+				</div>
 			{/if}
-		{/each}
+		</Dock>
+	</div>
+{:else}
+	<div class="fixed top-0 inset-x-0 z-50">
+		<nav class="backdrop-blur-sm bg-white/70 shadow-sm px-4 sm:px-6 py-3">
+			<div class="container mx-auto flex items-center justify-between">
+				<div class="flex items-center gap-2">
+					<img src="/Flow.png" alt="Flow Logo" class="h-8 w-auto" />
+					<h1 class="bg-gradient-to-b from-white to-neutral-700 bg-clip-text text-xl font-semibold text-transparent">
+						Flow
+					</h1>
+				</div>
+				
+				<!-- Desktop Navigation -->
+				<div class="hidden md:flex items-center gap-6">
+					<a href="#problem" class="text-gray-700 hover:text-primary transition-colors">Why?</a>
+					<a href="#feat" class="text-gray-700 hover:text-primary transition-colors">Features</a>
+					<a href="#faq" class="text-gray-700 hover:text-primary transition-colors">FAQ</a>
+					<a href="/auth/login" class="bg-primary text-white px-4 py-2 rounded-full font-medium hover:bg-primary/90 transition-colors">Get Started</a>
+				</div>
 
-		{#if session?.user}
-			<div
-				class="ml-2 flex items-center justify-center rounded-full bg-primary/10 px-3 py-1 text-sm font-medium"
-			>
-				XP: {userXp}
+				<!-- Mobile hamburger button -->
+				<button
+					class="md:hidden p-2 text-gray-700 hover:text-primary transition-colors"
+					onclick={() => (mobileMenuOpen = !mobileMenuOpen)}
+					aria-label="Toggle menu"
+				>
+					{#if mobileMenuOpen}
+						<X size={24} />
+					{:else}
+						<Menu size={24} />
+					{/if}
+				</button>
 			</div>
-		{/if}
-	</Dock>
-</div>
+
+			<!-- Mobile dropdown menu -->
+			{#if mobileMenuOpen}
+				<div 
+					class="md:hidden py-4 px-4 sm:px-6 mt-1 border-t border-gray-200 bg-white/90"
+					transition:fade={{ duration: 150 }}
+				>
+					<div class="flex flex-col gap-4">
+						<a href="#problem" class="py-2 text-gray-700 hover:text-primary transition-colors">Why?</a>
+						<a href="#feat" class="py-2 text-gray-700 hover:text-primary transition-colors">Features</a>
+						<a href="#faq" class="py-2 text-gray-700 hover:text-primary transition-colors">FAQ</a>
+						<a href="/auth/login" class="bg-primary text-white px-4 py-2 rounded-full font-medium hover:bg-primary/90 transition-colors text-center mt-2">Get Started</a>
+					</div>
+				</div>
+			{/if}
+		</nav>
+	</div>
+{/if}
