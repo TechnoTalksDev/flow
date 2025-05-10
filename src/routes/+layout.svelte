@@ -13,6 +13,7 @@
 	import DockIcon from '$lib/components/DockIcon.svelte';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 	import { Home, LogOut, Pencil, User, UserRound, LoaderCircle, Menu, X } from '@lucide/svelte';
+	import TextShine from '$lib/components/TextShine.svelte';
 
 	let { data, children } = $props();
 	let { session, supabase, url } = $derived(data);
@@ -21,7 +22,37 @@
 	let refreshInProgress = $state(false);
 	let lastRefreshAttempt = $state(0);
 	let mobileMenuOpen = $state(false);
-	
+
+	// Random loading messages
+	const loadingMessages = [
+		"Generating quantum tunnels...",
+		"Reticulating splines...",
+		"Convincing AI not to take over the world...",
+		"Brewing digital coffee for the servers...",
+		"Herding pixel cats...",
+		"Downloading more RAM...",
+		"Teaching robots to dance...",
+		"Untangling the internet's cables...",
+		"Polishing the pixels...",
+		"Summoning digital wizards..."
+	];
+
+	// Function to get a random loading message
+	function getRandomLoadingMessage() {
+		const randomIndex = Math.floor(Math.random() * loadingMessages.length);
+		return loadingMessages[randomIndex];
+	}
+
+	// Current loading message
+	let currentLoadingMessage = $state(getRandomLoadingMessage());
+
+	// Update message when navigation starts
+	$effect(() => {
+		if (navigating.complete) {
+			currentLoadingMessage = getRandomLoadingMessage();
+		}
+	});
+
 	// Increase refresh cooldown to reduce API calls (15 seconds)
 	const REFRESH_COOLDOWN = 15000;
 
@@ -38,7 +69,7 @@
 	// Function to safely fetch user data
 	async function safelyFetchUserData() {
 		if (!session?.user || !isSessionValid) return null;
-		
+
 		try {
 			const { data: userData, error } = await supabase
 				.from('users')
@@ -65,24 +96,24 @@
 	// Throttled token refresh function with better error handling
 	async function throttledRefreshToken() {
 		const now = Date.now();
-		
+
 		// Don't allow refreshes if one is in progress or if we've tried recently
-		if (refreshInProgress || (now - lastRefreshAttempt < REFRESH_COOLDOWN)) {
+		if (refreshInProgress || now - lastRefreshAttempt < REFRESH_COOLDOWN) {
 			return false;
 		}
-		
+
 		refreshInProgress = true;
 		lastRefreshAttempt = now;
-		
+
 		try {
 			// Use refreshSession only if we have a session
 			if (!session) {
 				refreshInProgress = false;
 				return false;
 			}
-			
+
 			const { data, error } = await supabase.auth.refreshSession();
-			
+
 			if (error) {
 				// Handle specific error codes
 				if (error.status === 400 && error.code === 'refresh_token_not_found') {
@@ -98,14 +129,14 @@
 				}
 				return false;
 			}
-			
+
 			if (data.session) {
 				isSessionValid = true;
 				// Update the local session data to avoid unnecessary refreshes
 				invalidate('supabase:auth');
 				return true;
 			}
-			
+
 			return false;
 		} catch (err) {
 			console.error('Error in refreshToken:', err);
@@ -119,7 +150,7 @@
 	$effect(() => {
 		async function fetchUserXp() {
 			if (!session?.user || !isSessionValid) return;
-			
+
 			const userData = await safelyFetchUserData();
 			if (userData) {
 				userXp = userData.xp || 0;
@@ -133,11 +164,11 @@
 	onMount(() => {
 		// Attempt token refresh only if we have a session and it's approaching expiry
 		if (session) {
-			const expiresAt = session.expires_at ? session.expires_at * 1000 : 0;  // convert to ms
+			const expiresAt = session.expires_at ? session.expires_at * 1000 : 0; // convert to ms
 			const now = Date.now();
 			const timeToExpiry = expiresAt - now;
-			
-			 // Only refresh if token expires in less than 5 minutes but is still valid
+
+			// Only refresh if token expires in less than 5 minutes but is still valid
 			if (timeToExpiry < 300000 && timeToExpiry > 0) {
 				throttledRefreshToken();
 			} else if (timeToExpiry <= 0) {
@@ -145,7 +176,7 @@
 				handleSessionExpiration();
 			}
 		}
-		
+
 		// Event listener for auth state changes
 		const { data } = supabase.auth.onAuthStateChange((event, newSession) => {
 			if (event === 'SIGNED_OUT') {
@@ -163,7 +194,7 @@
 		// Event listener for XP updates
 		const handleXpUpdate = async (event: Event) => {
 			if (!session?.user || !isSessionValid) return;
-			
+
 			const userData = await safelyFetchUserData();
 			if (userData) {
 				userXp = userData.xp || 0;
@@ -189,29 +220,27 @@
 		},
 		{ label: 'Sign out', icon: LogOut, link: '/auth/logout' }
 	];
-	
 
-	$inspect(navigating.complete)
+	$inspect(navigating.complete);
 </script>
 
 <Toaster />
 
 <!-- Page transition loading overlay -->
 {#if navigating.complete}
-	<div 
+	<div
 		class="fixed inset-0 z-[100] flex items-center justify-center bg-background/80 backdrop-blur-sm transition-all"
 		in:fade={{ duration: 100 }}
 		out:fade={{ duration: 300 }}
 	>
 		<div class="flex flex-col items-center gap-4">
 			<LoaderCircle class="size-12 animate-spin text-primary" />
-			<!-- <p class="text-lg font-medium">Loading...</p> -->
+			<TextShine>{currentLoadingMessage}</TextShine>
 		</div>
 	</div>
 {/if}
 
 {@render children()}
-
 
 {#if session}
 	<div class="fixed inset-x-0 bottom-4 z-50 flex justify-center">
@@ -238,7 +267,12 @@
 					</a>
 				{:else}
 					<a href={item.link}>
-						<DockIcon {mouseX} {magnification} {distance} class="rounded-full p-2 hover:bg-gray-200">
+						<DockIcon
+							{mouseX}
+							{magnification}
+							{distance}
+							class="rounded-full p-2 hover:bg-gray-200"
+						>
 							{@const Icon = item.icon}
 
 							<Icon size={20} strokeWidth={1.2} />
@@ -257,27 +291,35 @@
 		</Dock>
 	</div>
 {:else}
-	<div class="fixed top-0 inset-x-0 z-50">
-		<nav class="backdrop-blur-sm bg-white/70 shadow-sm px-4 sm:px-6 py-3">
+	<div class="fixed inset-x-0 top-0 z-50">
+		<nav class="bg-white/70 px-4 py-3 shadow-sm backdrop-blur-sm sm:px-6">
 			<div class="container mx-auto flex items-center justify-between">
 				<div class="flex items-center gap-2">
 					<img src="/Flow.png" alt="Flow Logo" class="h-8 w-auto" />
-					<h1 class="bg-gradient-to-b from-white to-neutral-700 bg-clip-text text-xl font-semibold text-transparent">
+					<h1
+						class="bg-gradient-to-b from-white to-neutral-700 bg-clip-text text-xl font-semibold text-transparent"
+					>
 						Flow
 					</h1>
 				</div>
-				
+
 				<!-- Desktop Navigation -->
-				<div class="hidden md:flex items-center gap-6">
-					<a href="#problem" class="text-gray-700 hover:text-primary transition-colors">Why?</a>
-					<a href="#feat" class="text-gray-700 hover:text-primary transition-colors">Features</a>
-					<a href="#faq" class="text-gray-700 hover:text-primary transition-colors">FAQ</a>
-					<a href="/auth/login" class="bg-primary text-white px-4 py-2 rounded-full font-medium hover:bg-primary/90 transition-colors">Get Started</a>
+				<div class="hidden items-center gap-6 md:flex">
+					<a href="#problem" class="text-gray-700 transition-colors hover:text-primary">Why?</a>
+					<a href="#feat" class="text-gray-700 transition-colors hover:text-primary">Features</a>
+					<a href="#faq" class="text-gray-700 transition-colors hover:text-primary">FAQ</a>
+					<a href="/portal">
+						<button
+							class="inline-flex w-full animate-shine items-center justify-center rounded-xl border border-neutral-800 bg-[linear-gradient(110deg,#000103,45%,#1e2631,55%,#000103)] bg-[length:200%_100%] px-4 py-2 text-sm font-medium text-white transition-colors"
+						>
+							Get Started
+						</button>
+					</a>
 				</div>
 
 				<!-- Mobile hamburger button -->
 				<button
-					class="md:hidden p-2 text-gray-700 hover:text-primary transition-colors"
+					class="p-2 text-gray-700 transition-colors hover:text-primary md:hidden"
 					onclick={() => (mobileMenuOpen = !mobileMenuOpen)}
 					aria-label="Toggle menu"
 				>
@@ -291,15 +333,25 @@
 
 			<!-- Mobile dropdown menu -->
 			{#if mobileMenuOpen}
-				<div 
-					class="md:hidden py-4 px-4 sm:px-6 mt-1 border-t border-gray-200 bg-white/90"
+				<div
+					class="mt-1 border-t border-gray-200 bg-white/90 px-4 py-4 sm:px-6 md:hidden"
 					transition:fade={{ duration: 150 }}
 				>
 					<div class="flex flex-col gap-4">
-						<a href="#problem" class="py-2 text-gray-700 hover:text-primary transition-colors">Why?</a>
-						<a href="#feat" class="py-2 text-gray-700 hover:text-primary transition-colors">Features</a>
-						<a href="#faq" class="py-2 text-gray-700 hover:text-primary transition-colors">FAQ</a>
-						<a href="/auth/login" class="bg-primary text-white px-4 py-2 rounded-full font-medium hover:bg-primary/90 transition-colors text-center mt-2">Get Started</a>
+						<a href="#problem" class="py-2 text-gray-700 transition-colors hover:text-primary"
+							>Why?</a
+						>
+						<a href="#feat" class="py-2 text-gray-700 transition-colors hover:text-primary"
+							>Features</a
+						>
+						<a href="#faq" class="py-2 text-gray-700 transition-colors hover:text-primary">FAQ</a>
+						<a href="/portal">
+							<button
+								class="inline-flex w-full animate-shine items-center justify-center rounded-xl border border-neutral-800 bg-[linear-gradient(110deg,#000103,45%,#1e2631,55%,#000103)] bg-[length:200%_100%] px-4 py-2 text-sm font-medium text-white transition-colors"
+							>
+								Get Started
+							</button>
+						</a>
 					</div>
 				</div>
 			{/if}
