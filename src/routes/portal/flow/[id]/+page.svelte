@@ -20,6 +20,7 @@
 	import { Confetti } from 'svelte-confetti';
 	import { onDestroy } from 'svelte';
 	import { fade, slide } from 'svelte/transition';
+	import * as Accordion from '$lib/components/ui/accordion/index.js';
 
 	// Define interface for Task
 	interface Task {
@@ -333,8 +334,8 @@
 								</span>
 							</div>
 						{/each}
-					</div>
-				</Card.Content>
+						</div>
+					</Card.Content>
 
 				<Card.Footer class="flex w-full flex-col gap-2">
 					{#if !clientTask.failed}
@@ -374,6 +375,18 @@
 									{formatTime(remaining)}
 								</h1>
 
+								<!-- Progress bar showing timer completion -->
+								<div class="relative w-[80%] h-8 mb-4 bg-gray-400/50 rounded-lg overflow-hidden">
+									<div 
+										class="absolute top-0 left-0 h-full bg-white transition-all duration-1000"
+										style="width: {Math.min(100, ((duration - remaining) / duration) * 100)}%"
+									>
+										<span class="absolute inset-0 flex items-center justify-center text-black font-semibold">
+											<span class="gradient-heading mr-1">{duration - remaining}</span> XP
+										</span>
+									</div>
+								</div>
+
 								{#if !(remaining > 0)}
 									<AlertDialog.Description class="text-gray-300">
 										Flow will <span class="text-red-500">auto fail</span> in
@@ -381,58 +394,69 @@
 									</AlertDialog.Description>
 								{/if}
 
-								<AlertDialog.Footer class="flex flex-row gap-4">
-									{#if remaining > 0}
-										<AlertDialog.Cancel
-											onclick={finishTask}
-											class="border-green-500 bg-transparent text-white transition-all duration-300"
-											>Done</AlertDialog.Cancel
-										>
-										<Tooltip.Provider>
-											<Tooltip.Root>
-												<Tooltip.Trigger>
-													<AlertDialog.Cancel
-														onclick={stopTimer}
-														class="border-red-500 bg-transparent text-white transition-all duration-300"
-														>Stop</AlertDialog.Cancel
-													>
-												</Tooltip.Trigger>
-												<Tooltip.Content>
-													<p class="flex flex-row gap-2">
-														You won't earn <strong>any</strong> XP for this task <HeartCrack
-															size="20"
-															color="red"
-														/>
-													</p>
-												</Tooltip.Content>
-											</Tooltip.Root>
-										</Tooltip.Provider>
-									{:else}
-										<AlertDialog.Cancel
-											onclick={finishTask}
-											class="border-green-500 bg-transparent text-white transition-all duration-300"
-											>Done</AlertDialog.Cancel
-										>
+								<AlertDialog.Footer class="flex flex-col gap-4 w-full">
+									<Accordion.Root type="single" class="w-full border-none">
+										<Accordion.Item value="actions" class="border-none">
+											<Accordion.Trigger class="text-gray-400 w-full flex justify-center py-2 border-none hover:no-underline [&[data-state=open]>svg]:rotate-180">
+												Actions
+											</Accordion.Trigger>
+											<Accordion.Content class="w-full pt-2">
+												<div class="flex flex-row gap-4 justify-center">
+													{#if remaining > 0}
+														<AlertDialog.Cancel
+															onclick={finishTask}
+															class="border-green-500 bg-transparent text-white transition-all duration-300"
+															>Done</AlertDialog.Cancel
+														>
+														<Tooltip.Provider>
+															<Tooltip.Root>
+																<Tooltip.Trigger>
+																	<AlertDialog.Cancel
+																		onclick={stopTimer}
+																		class="border-red-500 bg-transparent text-white transition-all duration-300"
+																		>Stop</AlertDialog.Cancel
+																	>
+																</Tooltip.Trigger>
+																<Tooltip.Content>
+																	<p class="flex flex-row gap-2">
+																		You won't earn <strong>any</strong> XP for this task <HeartCrack
+																			size="20"
+																			color="red"
+																		/>
+																	</p>
+																</Tooltip.Content>
+															</Tooltip.Root>
+														</Tooltip.Provider>
+													{:else}
+														<AlertDialog.Cancel
+															onclick={finishTask}
+															class="border-green-500 bg-transparent text-white transition-all duration-300"
+															>Done</AlertDialog.Cancel
+														>
 
-										<Tooltip.Provider>
-											<Tooltip.Root>
-												<Tooltip.Trigger
-													><AlertDialog.Action
-														class="border-[1] border-yellow-500 bg-transparent text-white transition-all duration-300"
-														>Need more time?</AlertDialog.Action
-													></Tooltip.Trigger
-												>
-												<Tooltip.Content>
-													<p class="flex flex-row gap-2">
-														You will <strong>half</strong> the XP for this task <HeartCrack
-															size="20"
-															color="red"
-														/>
-													</p>
-												</Tooltip.Content>
-											</Tooltip.Root>
-										</Tooltip.Provider>
-									{/if}
+														<Tooltip.Provider>
+															<Tooltip.Root>
+																<Tooltip.Trigger
+																	><AlertDialog.Action
+																		class="border-[1] border-yellow-500 bg-transparent text-white transition-all duration-300"
+																		>Need more time?</AlertDialog.Action
+																	></Tooltip.Trigger
+																>
+																<Tooltip.Content>
+																	<p class="flex flex-row gap-2">
+																		You will <strong>half</strong> the XP for this task <HeartCrack
+																			size="20"
+																			color="red"
+																		/>
+																	</p>
+																</Tooltip.Content>
+															</Tooltip.Root>
+														</Tooltip.Provider>
+													{/if}
+												</div>
+											</Accordion.Content>
+										</Accordion.Item>
+									</Accordion.Root>
 								</AlertDialog.Footer>
 							</AlertDialog.Content>
 						</AlertDialog.Root>

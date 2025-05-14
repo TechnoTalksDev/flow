@@ -45,6 +45,17 @@ export const load: PageServerLoad = async ({ locals: { supabase, safeGetSession 
 
 			if (completedError) throw completedError;
 
+			// Fallback if the RPC doesn't exist: fetch all completed tasks and calculate sum in JS
+			const { data: completedTasksData, error: fallbackError } = await supabase
+				.from('tasks')
+				.select('time')
+				.eq('completed', true);
+
+			if (fallbackError) throw fallbackError;
+
+			// Calculate sum manually
+			const totalTime = completedTasksData.reduce((sum, task) => sum + (task.time || 0), 0);
+
 			// Get failed tasks count
 			const { count: failedTasks, error: failedError } = await supabase
 				.from('tasks')
@@ -57,7 +68,8 @@ export const load: PageServerLoad = async ({ locals: { supabase, safeGetSession 
 				total: totalTasks || 0,
 				completed: completedTasks || 0,
 				failed: failedTasks || 0,
-				inProgress: (totalTasks || 0) - (completedTasks || 0)
+				inProgress: (totalTasks || 0) - (completedTasks || 0),
+				totalTime: totalTime
 			};
 		} catch (err) {
 			console.error('Error fetching task stats:', err);

@@ -283,9 +283,9 @@
 
 			{#if session?.user}
 				<div
-					class="ml-2 flex items-center justify-center rounded-full bg-primary/10 px-3 py-1 text-sm font-medium"
+					class="ml-2 flex items-center justify-center rounded-full bg-primary/10 px-3 py-1 text-sm font-semibold"
 				>
-					XP: {userXp}
+					XP: <span class="gradient-heading ml-1">{userXp}</span>
 				</div>
 			{/if}
 		</Dock>

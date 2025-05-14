@@ -1,10 +1,18 @@
 <script lang="ts">
 	import * as Card from '$lib/components/ui/card/index.js';
 	import { Skeleton } from '$lib/components/ui/skeleton/index.js';
-	import { formatDistance } from 'date-fns';
+	import { formatDistance, formatDuration, intervalToDuration } from 'date-fns';
 	import { ArrowRight, UserRound } from '@lucide/svelte';
+	import * as Accordion from '$lib/components/ui/accordion/index.js';
 
 	let { data } = $props();
+
+	function secondsToHumanReadable(seconds:number) {
+		const duration = intervalToDuration({ start: 0, end: seconds * 1000 });
+		return formatDuration(duration, { format: ['years', 'months', 'days', 'hours', 'minutes'], delimiter: ' ' });
+	}
+
+	let emailRevealed = $state("blur-sm");
 </script>
 
 <div class="flex h-screen w-screen flex-col items-center justify-center">
@@ -29,7 +37,9 @@
 					{/if}
 					<div class="space-y-1">
 						<h2 class="text-xl font-bold">{userData.username ?? userData.name}</h2>
-						<p class="text-sm text-muted-foreground">{userData.email}</p>
+						<button onclick={() => emailRevealed = emailRevealed === "blur-sm" ? "" : "blur-sm"}>
+							<p class="text-sm text-muted-foreground {emailRevealed} transition-all duration-100">{userData.email}</p>
+						</button>
 					</div>
 				</div>
 			{:catch error}
@@ -51,7 +61,7 @@
 					<div class="grid grid-cols-2 gap-4">
 						<div>
 							<h3 class="text-sm font-medium text-muted-foreground">XP</h3>
-							<p class="text-lg font-bold">{userData.xp || 0}</p>
+							<p class="text-lg font-bold gradient-heading">{userData.xp || 0}</p>
 						</div>
 						<div>
 							<h3 class="text-sm font-medium text-muted-foreground">Account Age</h3>
@@ -64,7 +74,7 @@
 						{#await data.taskStats}
 							<div class="rounded-md bg-muted p-4 text-sm">
 								<div class="grid grid-cols-2 gap-y-2">
-									<p><span class="font-semibold">Total Tasks:</span></p>
+									<p><span class="font-semibold">Total:</span></p>
 									<Skeleton class="h-4 w-16" />
 									<p><span class="font-semibold">Completed:</span></p>
 									<Skeleton class="h-4 w-16" />
@@ -77,14 +87,19 @@
 						{:then stats}
 							<div class="rounded-md bg-muted p-4 text-sm">
 								<div class="grid grid-cols-2 gap-y-2">
-									<p><span class="font-semibold">Total Tasks:</span></p>
+									<p><span class="font-semibold">Total:</span></p>
 									<p class="text-right">{stats.total}</p>
 									<p><span class="font-semibold">Completed:</span></p>
 									<p class="text-right text-green-600">{stats.completed}</p>
+
 									<p><span class="font-semibold">Failed:</span></p>
 									<p class="text-right text-red-600">{stats.failed}</p>
 									<p><span class="font-semibold">In Progress:</span></p>
 									<p class="text-right text-blue-600">{stats.inProgress}</p>
+
+
+									<p><span class="font-semibold">Locked in for</span></p>
+									<p class="text-right font-semibold gradient-primary-secondary ">{secondsToHumanReadable(stats.totalTime)}</p>
 								</div>
 							</div>
 						{:catch}
@@ -95,14 +110,22 @@
 					</div>
 
 					<div>
-						<h3 class="mb-2 text-sm font-medium text-muted-foreground">Account Details</h3>
-						<div class="rounded-md bg-muted p-4 text-sm">
-							<p><span class="font-semibold">User ID:</span> {userData.id}</p>
-							<p>
-								<span class="font-semibold">Joined:</span>
-								{new Date(userData.created_at).toLocaleDateString()}
-							</p>
-						</div>
+						<Accordion.Root type="single" class="border-none">
+							<Accordion.Item value="account-details" class="border-none mb-0 pb-0">
+								<Accordion.Trigger class="pb-0 mb-0">
+									<h3 class="mb-2 text-sm font-medium text-muted-foreground">Account Details</h3>
+								</Accordion.Trigger>
+								<Accordion.Content>
+									<div class="rounded-md bg-muted p-4 text-sm">
+										<p><span class="font-semibold">User ID:</span> {userData.id}</p>
+										<p>
+											<span class="font-semibold">Joined:</span>
+											{new Date(userData.created_at).toLocaleDateString()}
+										</p>
+									</div>
+								</Accordion.Content>
+							</Accordion.Item>
+						</Accordion.Root>
 					</div>
 				</div>
 			{:catch error}

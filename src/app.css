@@ -73,3 +73,36 @@
 		@apply bg-background text-foreground;
 	}
 }
+
+
+.gradient-heading {
+	@apply bg-clip-text text-transparent box-decoration-clone;
+	/* Direction */
+	@apply bg-gradient-to-br;
+	/* Color Stops */
+	@apply from-white via-[#9c40ff] to-white;
+}
+
+.gradient-primary-secondary {
+	@apply bg-clip-text text-transparent box-decoration-clone;
+	/* Direction */
+	@apply bg-gradient-to-br;
+	/* Color Stops */
+	@apply from-[#ffaa40] via-[#9c40ff] to-[#ffaa40];
+}
+
+.gradient-secondary-primary {
+	@apply bg-clip-text text-transparent box-decoration-clone;
+	/* Direction */
+	@apply bg-gradient-to-br;
+	/* Color Stops */
+	@apply from-[#9c40ff] via-[#ffaa40] to-[#9c40ff];
+}
+
+.gradient-secondary {
+	@apply bg-clip-text text-transparent box-decoration-clone;
+	/* Direction */
+	@apply bg-gradient-to-br;
+	/* Color Stops */
+	@apply from-white via-[#ffaa40] to-white;
+}

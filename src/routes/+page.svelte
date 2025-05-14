@@ -22,19 +22,33 @@
 
 <div class="flex min-h-screen w-full flex-col items-center overflow-x-hidden">
 	<!-- Hero Section -->
-	<section class="flex min-h-[100vh] w-full flex-col items-center justify-center px-4 py-20">
+	<section class="relative flex min-h-[100vh] w-full flex-col items-center justify-center px-4 py-20">
+		<!-- Gradient Blob -->
+		<div
+			class="absolute z-0 h-[650px] w-[600px] rounded-full opacity-30 blur-[100px] animate-[spin_180s_linear_infinite]"
+			style="background: radial-gradient(circle at center, #ffaa40, #9c40ff);"
+		></div>
+		
 		<article
-			class="relative flex max-w-3xl flex-col items-center justify-between rounded-3xl border border-gray-700/70 bg-background p-8 text-center md:p-10"
+			class="relative z-10 flex max-w-3xl flex-col items-center justify-between rounded-3xl border border-gray-700/70 bg-background/60 p-8 text-center backdrop-blur-lg md:p-10"
 		>
 			<BorderBeam size={250} duration={12} />
 
 			<Badge class="mb-4">Productivity Reimagined</Badge>
 
-			<h1
-				class="mb-6 bg-gradient-to-b from-white to-neutral-700 bg-clip-text text-7xl font-semibold text-transparent md:text-9xl"
-			>
-				Flow
-			</h1>
+			<div class="relative mb-6">
+				<h1
+					class="absolute inset-0 bg-gradient-to-b from-white to-[#9c40ff] bg-clip-text text-7xl font-semibold text-transparent md:text-9xl blur-md"
+				>
+					Flow
+				</h1>
+
+				<h1
+					class="relative bg-gradient-to-b from-white to-[#9c40ff] bg-clip-text text-7xl font-semibold text-transparent md:text-9xl"
+				>
+					Flow
+				</h1>
+			</div>
 
 			<p class="mb-6 max-w-xl text-lg text-muted-foreground md:text-2xl">
 				A science-backed productivity app designed to get you into the flow state and help you
@@ -226,7 +240,7 @@
 			<h2 class="mb-4 text-3xl font-bold">Frequently Asked Questions</h2>
 		</div>
 
-		<Accordion.Root type="single" collapsible class="w-full">
+		<Accordion.Root type="single" class="w-full">
 			<Accordion.Item value="item-1">
 				<Accordion.Trigger>What is the "flow state"?</Accordion.Trigger>
 				<Accordion.Content>
