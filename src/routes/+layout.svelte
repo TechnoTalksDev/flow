@@ -6,7 +6,7 @@
 	import { onNavigate } from '$app/navigation';
 	import { navigating } from '$app/state';
 	import { fade } from 'svelte/transition';
-
+	import { Badge } from '$lib/components/ui/badge/index.js';
 	import '../app.css';
 	import { Toaster } from '$lib/components/ui/sonner';
 	import Dock from '$lib/components/Dock.svelte';
@@ -295,12 +295,23 @@
 		<nav class="bg-white/70 px-4 py-3 shadow-sm backdrop-blur-sm sm:px-6">
 			<div class="container mx-auto flex items-center justify-between">
 				<div class="flex items-center gap-2">
+					<!--
 					<img src="/Flow.png" alt="Flow Logo" class="h-8 w-auto" />
-					<h1
-						class="bg-gradient-to-b from-white to-neutral-700 bg-clip-text text-xl font-semibold text-transparent"
-					>
-						Flow
-					</h1>
+					-->
+					<div class="relative">
+						<h1
+							class="absolute inset-0 bg-gradient-to-b from-white to-[#9c40ff] bg-clip-text text-lg font-semibold text-transparent md:text-xl blur-md"
+						>
+							Flow
+						</h1>
+		
+						<h1
+							class="relative bg-gradient-to-b from-white to-[#9c40ff] bg-clip-text text-lg font-semibold text-transparent md:text-xl"
+						>
+							Flow
+						</h1>
+					</div>
+					<Badge variant="outline">BETA</Badge>
 				</div>
 
 				<!-- Desktop Navigation -->

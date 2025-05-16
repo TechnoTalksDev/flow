@@ -25,7 +25,7 @@
 	<section class="relative flex min-h-[100vh] w-full flex-col items-center justify-center px-4 py-20">
 		<!-- Gradient Blob -->
 		<div
-			class="absolute z-0 h-[650px] w-[600px] rounded-full opacity-30 blur-[100px] animate-[spin_180s_linear_infinite]"
+			class="absolute z-0 h-[650px] w-[600px] rounded-full opacity-30 blur-[100px]"
 			style="background: radial-gradient(circle at center, #ffaa40, #9c40ff);"
 		></div>
 		
