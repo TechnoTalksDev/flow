@@ -32,18 +32,24 @@
 			console.log(`Superform response: ${result.status}`);
 			if (result.status === 200) {
 				toast.success(`"${$formData.name}" task created`);
+				// Reset form and custom fields on successful submission
+				reset();
+				hours = 0;
+				minutes = 0;
+				dateValue = undefined;
 			} else {
 				toast.error(`Something went wrong :(`);
 			}
 		}
 	});
 
-	const { form: formData, enhance } = form;
+	const { form: formData, enhance, reset } = form;
 
 	let loading = $state(false);
 
 	let hours = $state(0);
 	let minutes = $state(0);
+	let dateValue = $state<DateValue | undefined>(undefined);
 
 	let seconds = $derived((hours * 60 + minutes) * 60);
 	//$inspect(seconds)
@@ -110,7 +116,7 @@
 				<Form.Control>
 					{#snippet children({ props })}
 						<Form.Label>Due</Form.Label>
-						<DatePicker bind:parsed={$formData.dueDate} />
+						<DatePicker bind:value={dateValue} bind:parsed={$formData.dueDate} />
 						<input type="hidden" name="dueDate" value={$formData.dueDate} />
 					{/snippet}
 				</Form.Control>
@@ -121,29 +127,96 @@
 			<Form.Field {form} name="time">
 				<Form.Control>
 					{#snippet children({ props })}
-						<Form.Label>Flow</Form.Label>
-						<div class="flex flex-row items-center gap-2">
-							<Input
-								{...props}
-								name=""
-								type="number"
-								class="w-[60px] p-1"
-								placeholder="0"
-								bind:value={hours}
-							/>
-							<Form.Label class="mr-4">H</Form.Label>
-							<Input
-								{...props}
-								name=""
-								type="number"
-								class="w-[60px] p-1"
-								max={59}
-								min={0}
-								placeholder="0"
-								bind:value={minutes}
-							/>
-							<Form.Label>M</Form.Label>
+						<Form.Label>Flow Duration</Form.Label>
+						
+						<!-- Time Input Controls -->
+						<div class="flex items-center gap-4">
+							<div class="inline-flex items-center gap-2 p-3 bg-muted/30 rounded-lg border w-fit">
+								<div class="flex flex-col items-center">
+									<Input
+										{...props}
+										name=""
+										type="number"
+										class="w-14 h-10 text-center font-medium [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+										placeholder="0"
+										min={0}
+										max={23}
+										bind:value={hours}
+									/>
+									<span class="text-xs text-muted-foreground font-medium mt-1">HR</span>
+								</div>
+								
+								<div class="text-xl text-muted-foreground font-light mb-4">:</div>
+								
+								<div class="flex flex-col items-center">
+									<Input
+										{...props}
+										name=""
+										type="number"
+										class="w-14 h-10 text-center font-medium [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+										placeholder="00"
+										min={0}
+										max={59}
+										bind:value={minutes}
+									/>
+									<span class="text-xs text-muted-foreground font-medium mt-1">MIN</span>
+								</div>
+							</div>
+							
+							<!-- Quick Preset Buttons -->
+							<div class="flex flex-wrap gap-2">
+								<button
+									type="button"
+									class="px-3 py-1.5 text-xs bg-secondary hover:bg-secondary/80 rounded-md transition-colors"
+									onclick={() => { hours = 0; minutes = 15; }}
+								>
+									15m
+								</button>
+																<button
+									type="button"
+									class="px-3 py-1.5 text-xs bg-secondary hover:bg-secondary/80 rounded-md transition-colors"
+									onclick={() => { hours = 0; minutes = 30; }}
+								>
+									30m
+								</button>
+								<button
+									type="button"
+									class="px-3 py-1.5 text-xs bg-secondary hover:bg-secondary/80 rounded-md transition-colors"
+									onclick={() => { hours = 0; minutes = 45; }}
+								>
+									45m
+								</button>
+								<button
+									type="button"
+									class="px-3 py-1.5 text-xs bg-secondary hover:bg-secondary/80 rounded-md transition-colors"
+									onclick={() => { hours = 1; minutes = 0; }}
+								>
+									1h
+								</button>
+								<button
+									type="button"
+									class="px-3 py-1.5 text-xs bg-secondary hover:bg-secondary/80 rounded-md transition-colors"
+									onclick={() => { hours = 1; minutes = 30; }}
+								>
+									1h 30m
+								</button>
+								<button
+									type="button"
+									class="px-3 py-1.5 text-xs bg-secondary hover:bg-secondary/80 rounded-md transition-colors"
+									onclick={() => { hours = 2; minutes = 0; }}
+								>
+									2h
+								</button>
+								<button
+									type="button"
+									class="px-3 py-1.5 text-xs bg-secondary hover:bg-secondary/80 rounded-md transition-colors"
+									onclick={() => { hours = 0; minutes = 0; }}
+								>
+									Clear
+								</button>
+							</div>
 						</div>
+						
 						<input type="hidden" name="time" bind:value={seconds} />
 					{/snippet}
 				</Form.Control>

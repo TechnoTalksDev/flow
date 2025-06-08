@@ -4,7 +4,7 @@
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 
-	import { DateFormatter } from '@internationalized/date';
+	import { DateFormatter, type DateValue } from '@internationalized/date';
 	import DatePicker from './datePicker.svelte';
 	import { Textarea } from './components/ui/textarea';
 	import { TagsInput } from './components/ui/tags-input';
@@ -27,6 +27,7 @@
 
 	let hours = $state(0);
 	let minutes = $state(0);
+	let dateValue = $state<DateValue | undefined>(undefined);
 
 	let seconds = $derived((hours * 60 + minutes) * 60);
 	//$inspect(seconds)
@@ -41,6 +42,13 @@
 		description = task.description;
 		dueDate = task.dueDate;
 		tags = task.tags;
+		
+		// Initialize time from task.time (seconds)
+		if (task.time) {
+			const totalMinutes = Math.floor(task.time / 60);
+			hours = Math.floor(totalMinutes / 60);
+			minutes = totalMinutes % 60;
+		}
 	}
 
 	//$inspect(name, description, dueDate, tags, seconds)
@@ -146,34 +154,99 @@
 			<div>
 				<Label>Due</Label>
 				<br />
-				<DatePicker bind:parsed={dueDate} />
+				<DatePicker bind:value={dateValue} bind:parsed={dueDate} />
 				<Card.Description>When do you need it done by?</Card.Description>
 			</div>
 
 			<div>
-				<Label>Flow</Label>
-				<div class="flex flex-row items-center gap-2">
-					<Input
-						name=""
-						type="number"
-						class="w-[60px] p-1"
-						placeholder="0"
-						bind:value={hours}
-						min="0"
-						required
-					/>
-					<Label class="mr-4">H</Label>
-					<Input
-						name=""
-						type="number"
-						class="w-[60px] p-1"
-						max={59}
-						min={0}
-						placeholder="0"
-						bind:value={minutes}
-						required
-					/>
-					<Label>M</Label>
+				<Label>Flow Duration</Label>
+				
+				<!-- Time Input Controls -->
+				<div class="flex items-center gap-4">
+					<div class="inline-flex items-center gap-2 p-3 bg-muted/30 rounded-lg border w-fit">
+						<div class="flex flex-col items-center">
+							<Input
+								name=""
+								type="number"
+								class="w-14 h-10 text-center font-medium [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+								placeholder="0"
+								min={0}
+								max={23}
+								bind:value={hours}
+								required
+							/>
+							<span class="text-xs text-muted-foreground font-medium mt-1">HR</span>
+						</div>
+						
+						<div class="text-xl text-muted-foreground font-light mb-4">:</div>
+						
+						<div class="flex flex-col items-center">
+							<Input
+								name=""
+								type="number"
+								class="w-14 h-10 text-center font-medium [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+								placeholder="00"
+								min={0}
+								max={59}
+								bind:value={minutes}
+								required
+							/>
+							<span class="text-xs text-muted-foreground font-medium mt-1">MIN</span>
+						</div>
+					</div>
+					
+					<!-- Quick Preset Buttons -->
+					<div class="flex flex-wrap gap-2">
+						<button
+							type="button"
+							class="px-3 py-1.5 text-xs bg-secondary hover:bg-secondary/80 rounded-md transition-colors"
+							onclick={() => { hours = 0; minutes = 15; }}
+						>
+							15m
+						</button>
+						<button
+							type="button"
+							class="px-3 py-1.5 text-xs bg-secondary hover:bg-secondary/80 rounded-md transition-colors"
+							onclick={() => { hours = 0; minutes = 30; }}
+						>
+							30m
+						</button>
+						<button
+							type="button"
+							class="px-3 py-1.5 text-xs bg-secondary hover:bg-secondary/80 rounded-md transition-colors"
+							onclick={() => { hours = 0; minutes = 45; }}
+						>
+							45m
+						</button>
+						<button
+							type="button"
+							class="px-3 py-1.5 text-xs bg-secondary hover:bg-secondary/80 rounded-md transition-colors"
+							onclick={() => { hours = 1; minutes = 0; }}
+						>
+							1h
+						</button>
+						<button
+							type="button"
+							class="px-3 py-1.5 text-xs bg-secondary hover:bg-secondary/80 rounded-md transition-colors"
+							onclick={() => { hours = 1; minutes = 30; }}
+						>
+							1h 30m
+						</button>
+						<button
+							type="button"
+							class="px-3 py-1.5 text-xs bg-secondary hover:bg-secondary/80 rounded-md transition-colors"
+							onclick={() => { hours = 2; minutes = 0; }}
+						>
+							2h
+						</button>
+						<button
+							type="button"
+							class="px-3 py-1.5 text-xs bg-secondary hover:bg-secondary/80 rounded-md transition-colors"
+							onclick={() => { hours = 0; minutes = 0; }}
+						>
+							Clear
+						</button>
+					</div>
 				</div>
 				<Card.Description>How long does your flow state need to be?</Card.Description>
 			</div>
